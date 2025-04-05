@@ -1,0 +1,191 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model atestados {
+  id                   String       @id @db.Uuid
+  funcionario_id       String       @db.Uuid
+  codigo_empresa       BigInt?
+  unidade              String?      @db.VarChar(130)
+  setor                String?      @db.VarChar(130)
+  matricula_func       String?      @db.VarChar(30)
+  dt_nascimento        DateTime?    @db.Date
+  sexo                 Int?
+  tipo_atestado        Int?
+  dt_inicio_atestado   DateTime?    @db.Date
+  dt_fim_atestado      DateTime?    @db.Date
+  hora_inicio_atestado String?      @db.VarChar(5)
+  hora_fim_atestado    String?      @db.VarChar(5)
+  dias_afastados       Int?
+  horas_afastado       String?      @db.VarChar(5)
+  cid_principal        String?      @db.VarChar(10)
+  descricao_cid        String?      @db.VarChar(264)
+  grupo_patologico     String?      @db.VarChar(80)
+  tipo_licenca         String?      @db.VarChar(100)
+  funcionarios         funcionarios @relation(fields: [funcionario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([cid_principal, codigo_empresa], map: "idx_atestado_cid_empresa")
+  @@index([matricula_func, dt_inicio_atestado], map: "idx_atestado_matricula_data")
+  @@index([cid_principal], map: "ix_atestados_cid_principal")
+  @@index([codigo_empresa], map: "ix_atestados_codigo_empresa")
+  @@index([dt_inicio_atestado], map: "ix_atestados_dt_inicio_atestado")
+  @@index([matricula_func], map: "ix_atestados_matricula_func")
+}
+
+model empresas {
+  id                   String         @id @db.Uuid
+  codigo               BigInt         @unique
+  nome_abreviado       String         @db.VarChar(60)
+  razao_social_inicial String?        @db.VarChar(200)
+  razao_social         String         @db.VarChar(200)
+  endereco             String?        @db.VarChar(110)
+  numero_endereco      String?        @db.VarChar(20)
+  complemento_endereco String?        @db.VarChar(300)
+  bairro               String?        @db.VarChar(80)
+  cidade               String?        @db.VarChar(50)
+  cep                  String?        @db.VarChar(11)
+  uf                   String?        @db.VarChar(2)
+  cnpj                 String?        @db.VarChar(20)
+  inscricao_estadual   String?        @db.VarChar(20)
+  inscricao_municipal  String?        @db.VarChar(20)
+  ativo                Boolean?
+  usuario_id           String?        @db.Uuid
+  usuarios             usuarios?      @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  funcionarios         funcionarios[]
+}
+
+model exames {
+  id                   String        @id @db.Uuid
+  codigo_empresa       BigInt?
+  nome_abreviado       String?       @db.VarChar(60)
+  unidade              String?       @db.VarChar(130)
+  cidade               String?       @db.VarChar(50)
+  estado               String?       @db.VarChar(2)
+  bairro               String?       @db.VarChar(80)
+  endereco             String?       @db.VarChar(110)
+  cep                  String?       @db.VarChar(11)
+  cnpj_unidade         String?       @db.VarChar(20)
+  setor                String?       @db.VarChar(130)
+  cargo                String?       @db.VarChar(130)
+  codigo_funcionario   BigInt?
+  funcionario_id       String?       @db.Uuid
+  cpf_funcionario      String?       @db.VarChar(19)
+  matricula            String?       @db.VarChar(30)
+  data_admissao        DateTime?     @db.Date
+  nome                 String?       @db.VarChar(120)
+  email_funcionario    String?       @db.VarChar(400)
+  telefone_funcionario String?       @db.VarChar(20)
+  codigo_exame         String?       @db.VarChar(50)
+  exame                String?       @db.VarChar(255)
+  ultimo_pedido        DateTime?     @db.Date
+  data_resultado       DateTime?     @db.Date
+  periodicidade        String?       @db.VarChar(50)
+  refazer              String?       @db.VarChar(10)
+  funcionarios         funcionarios? @relation(fields: [funcionario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([codigo_exame], map: "idx_exame_codigo_exame")
+  @@index([codigo_empresa, data_resultado], map: "idx_exame_empresa_data")
+  @@index([codigo_funcionario, data_resultado], map: "idx_exame_funcionario_data")
+  @@index([codigo_empresa], map: "ix_exames_codigo_empresa")
+  @@index([codigo_exame], map: "ix_exames_codigo_exame")
+  @@index([codigo_funcionario], map: "ix_exames_codigo_funcionario")
+  @@index([cpf_funcionario], map: "ix_exames_cpf_funcionario")
+  @@index([data_resultado], map: "ix_exames_data_resultado")
+  @@index([matricula], map: "ix_exames_matricula")
+  @@index([ultimo_pedido], map: "ix_exames_ultimo_pedido")
+}
+
+model funcionarios {
+  id                      String      @id @db.Uuid
+  empresa_id              String      @db.Uuid
+  codigo_empresa          BigInt?
+  nome_empresa            String?     @db.VarChar(200)
+  codigo                  BigInt?
+  nome                    String?     @db.VarChar(120)
+  codigo_unidade          String?     @db.VarChar(20)
+  nome_unidade            String?     @db.VarChar(130)
+  codigo_setor            String?     @db.VarChar(12)
+  nome_setor              String?     @db.VarChar(130)
+  codigo_cargo            String?     @db.VarChar(10)
+  nome_cargo              String?     @db.VarChar(130)
+  cbo_cargo               String?     @db.VarChar(10)
+  ccusto                  String?     @db.VarChar(50)
+  nome_centro_custo       String?     @db.VarChar(130)
+  matricula_funcionario   String?     @db.VarChar(30)
+  cpf                     String?     @unique(map: "ix_funcionarios_cpf") @db.VarChar(19)
+  rg                      String?     @db.VarChar(19)
+  uf_rg                   String?     @db.VarChar(10)
+  orgao_emissor_rg        String?     @db.VarChar(20)
+  situacao                String?     @db.VarChar(12)
+  sexo                    Int?
+  pis                     String?     @db.VarChar(20)
+  ctps                    String?     @db.VarChar(30)
+  serie_ctps              String?     @db.VarChar(25)
+  estado_civil            Int?
+  tipo_contratacao        Int?
+  data_nascimento         DateTime?   @db.Date
+  data_admissao           DateTime?   @db.Date
+  data_demissao           DateTime?   @db.Date
+  endereco                String?     @db.VarChar(110)
+  numero_endereco         String?     @db.VarChar(20)
+  bairro                  String?     @db.VarChar(80)
+  cidade                  String?     @db.VarChar(50)
+  uf                      String?     @db.VarChar(20)
+  cep                     String?     @db.VarChar(10)
+  telefone_residencial    String?     @db.VarChar(20)
+  telefone_celular        String?     @db.VarChar(20)
+  email                   String?     @db.VarChar(400)
+  deficiente              Boolean?
+  deficiencia             String?     @db.VarChar(861)
+  nm_mae_funcionario      String?     @db.VarChar(120)
+  data_ult_alteracao      DateTime?   @db.Date
+  matricula_rh            String?     @db.VarChar(30)
+  cor                     Int?
+  escolaridade            Int?
+  naturalidade            String?     @db.VarChar(50)
+  ramal                   String?     @db.VarChar(10)
+  regime_revezamento      Int?
+  regime_trabalho         String?     @db.VarChar(500)
+  tel_comercial           String?     @db.VarChar(20)
+  turno_trabalho          Int?
+  rh_unidade              String?     @db.VarChar(80)
+  rh_setor                String?     @db.VarChar(80)
+  rh_cargo                String?     @db.VarChar(80)
+  rh_centro_custo_unidade String?     @db.VarChar(80)
+  atestados               atestados[]
+  exames                  exames[]
+  empresas                empresas    @relation(fields: [empresa_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([codigo], map: "idx_funcionario_codigo")
+  @@index([codigo_empresa], map: "idx_funcionario_codigo_empresa")
+  @@index([cpf], map: "idx_funcionario_cpf")
+  @@index([data_admissao], map: "idx_funcionario_data_admissao")
+  @@index([matricula_funcionario], map: "idx_funcionario_matricula")
+  @@index([nome], map: "idx_funcionario_nome")
+  @@index([codigo], map: "ix_funcionarios_codigo")
+  @@index([codigo_empresa], map: "ix_funcionarios_codigo_empresa")
+  @@index([codigo_unidade], map: "ix_funcionarios_codigo_unidade")
+  @@index([matricula_funcionario], map: "ix_funcionarios_matricula_funcionario")
+  @@index([nome], map: "ix_funcionarios_nome")
+}
+
+model usuarios {
+  id             String     @id @db.Uuid
+  nome           String     @db.VarChar(100)
+  email          String     @unique @db.VarChar(120)
+  senha          String     @db.VarChar(255)
+  dt_criacao     DateTime?  @db.Timestamp(6)
+  dt_last_acess  DateTime?  @db.Timestamp(6)
+  dt_last_updt   DateTime?  @db.Timestamp(6)
+  user_updt      String?    @db.Uuid
+  type_user      String?    @db.VarChar(50)
+  active         Boolean?
+  empresas       empresas[]
+  usuarios       usuarios?  @relation("usuariosTousuarios", fields: [user_updt], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_usuarios usuarios[] @relation("usuariosTousuarios")
+}
