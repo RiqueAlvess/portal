@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+{% block body %}
+<div class="flex min-h-screen bg-[#00325A]">
+  <div class="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+    <div class="mx-auto w-full max-w-sm lg:w-96">
+      <div>
+        <img class="h-15 w-auto" src="{% static 'logo.png' %}" alt="PortalGRS Logo">
+        <h2 class="mt-4 text-2xl font-bold tracking-tight text-white">Entre em sua conta</h2>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="mt-4 rounded-md p-3 {% if message.tags == 'error' %}bg-[#E30613]/10 text-[#E30613]{% elif message.tags == 'success' %}bg-[#0072BC]/10 text-[#0072BC]{% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <div class="mt-8">
+        <form action="{% url 'login' %}" method="POST" class="space-y-6">
+          {% csrf_token %}
+          <div>
+            <label class="block text-sm font-medium text-white">Usuário</label>
+            <div class="mt-2">
+              <input type="text" name="username" required
+                     class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white placeholder:text-[#6E6E6E]
+                     outline outline-1 outline-white/10 focus:outline-2 focus:outline-[#0072BC] sm:text-sm">
+            </div>
+          </div>
+
+          <div>
+            <label for="password" class="block text-sm font-medium text-white">Senha</label>
+            <div class="mt-2">
+              <input type="password" name="senha" required
+                     class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white placeholder:text-[#6E6E6E]
+                     outline outline-1 outline-white/10 focus:outline-2 focus:outline-[#0072BC] sm:text-sm">
+            </div>
+          </div>
+
+          <div>
+            <button type="submit"
+                    class="flex w-full justify-center rounded-md bg-[#0072BC] px-3 py-1.5 text-sm font-semibold text-white shadow-sm
+                           hover:bg-[#005c9d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0072BC]">
+              Entrar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="relative hidden w-0 flex-1 lg:block">
+    <img class="absolute inset-0 h-full w-full object-cover"
+         src="https://images.unsplash.com/photo-1511883040705-6011fad9edfc?q=80&w=1474&auto=format&fit=crop"
+         alt="">
+  </div>
+</div>
+{% endblock body %}
