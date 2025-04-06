@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block body %}
+  <div class="px-10 py-12 bg-[#00325A] min-h-screen">
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8 shadow-md">
+        <h1 class="text-3xl font-bold text-white">
+          Bem-vindo, {{ request.user.first_name|default:request.user.username }}!
+        </h1>
+        <p class="text-[#F2F2F2] mt-2 text-base">
+          Você está logado no <strong>Portal GRS</strong>. Use o menu acima para navegar pelo sistema.
+        </p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

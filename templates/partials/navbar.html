@@ -1,0 +1,39 @@
+{% load static %}
+<nav class="bg-[#00325A] border-b border-white/10 px-6 py-4 flex items-center justify-between lg:px-10">
+
+  <div class="flex items-center">
+    <a href="{% url 'dashboard' %}" class="-m-1.5 p-1.5">
+      <span class="sr-only">PortalGRS</span>
+      <img class="h-8 w-auto" src="{% static 'logo.png' %}" alt="PortalGRS Logo">
+    </a>
+  </div>
+
+  <div class="flex lg:hidden">
+    <button type="button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-white hover:text-[#0072BC] focus:outline-none">
+      <span class="sr-only">Abrir menu principal</span>
+      <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+      </svg>
+    </button>
+  </div>
+
+  <div class="hidden lg:flex lg:gap-x-12 lg:ml-12">
+    <a href="{% url 'dashboard' %}" class="text-sm font-semibold text-white hover:text-[#0072BC]">
+      Dashboard
+    </a>
+  </div>
+
+  <div class="hidden lg:flex lg:flex-1 lg:justify-end">
+    <form method="POST" action="">
+      {% csrf_token %}
+      <button type="submit" class="flex items-center gap-2 text-white hover:text-[#E30613] text-sm font-medium transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 12h-9" />
+        </svg>
+        <span class="hidden sm:inline">Sair</span>
+      </button>
+    </form>
+  </div>
+</nav>
