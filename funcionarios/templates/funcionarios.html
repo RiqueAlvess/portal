@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+{% block body %}
+<div class="px-10 py-12 bg-[#00325A] min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-2xl font-bold text-white mb-8">Funcionários - {{ empresa_ativa.RAZAOSOCIAL }}</h1>
+    <form method="GET" class="flex flex-col sm:flex-row gap-4 mb-6">
+      <input type="text" name="q" value="{{ busca }}" placeholder="Buscar por nome ou CPF"
+             class="flex-1 px-4 py-2 rounded-md bg-white/10 placeholder:text-white/50 text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-[#0072BC]">
+      <select name="situacao" class="px-4 py-2 rounded-md bg-white/10 text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-[#0072BC]">
+        <option value="">Todas as Situações</option>
+        {% for s in situacoes %}
+          <option value="{{ s }}" {% if situacao_selecionada == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="px-6 py-2 rounded-md bg-[#0072BC] hover:bg-[#005c9d] text-white font-semibold">Filtrar</button>
+    </form>
+    
+    <div class="bg-white/5 border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+      <table class="w-full border-collapse">
+        <thead class="bg-[#002844]">
+          <tr>
+            <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Nome</th>
+            <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">CPF</th>
+            <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Setor</th>
+            <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Situação</th>
+            <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/10">
+          {% for f in funcionarios %}
+            <tr class="hover:bg-white/5 transition-colors">
+              <td class="flex items-center gap-2 px-6 py-4 text-white/90">
+                <i data-lucide="user" class="size-4 text-white/60"></i>
+                {{ f.NOME }}
+              </td>
+              <td class="px-6 py-4 text-white/90">{{ f.CPF }}</td>
+              <td class="px-6 py-4 text-white/90">{{ f.NOMESETOR }}</td>
+              <td class="px-6 py-4">
+                <span class="bg-[#0072BC]/90 text-white px-3 py-1 rounded-full text-xs font-bold">{{ f.SITUACAO }}</span>
+              </td>
+              <td class="px-6 py-4">
+                <a href="{% url 'detalhes_funcionario' f.id %}" class="text-sm text-white/70 hover:text-white underline">Detalhes</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-6 text-white/70">Nenhum funcionário encontrado.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      
+      {% if funcionarios.paginator.num_pages > 1 %}
+        <div class="px-6 py-4 flex flex-col sm:flex-row justify-between items-center border-t border-white/10">
+          <div class="text-sm text-white/70 mb-4 sm:mb-0">
+            Mostrando {{ funcionarios.start_index }} a {{ funcionarios.end_index }} de {{ funcionarios.paginator.count }} funcionários
+          </div>
+          <div class="flex space-x-2">
+            {% if funcionarios.has_previous %}
+              <a href="?page=1{% if busca %}&q={{ busca }}{% endif %}{% if situacao_selecionada %}&situacao={{ situacao_selecionada }}{% endif %}" 
+                 class="px-3 py-1 bg-white/10 rounded-md hover:bg-white/20 text-white/80 text-sm">Primeira</a>
+              <a href="?page={{ funcionarios.previous_page_number }}{% if busca %}&q={{ busca }}{% endif %}{% if situacao_selecionada %}&situacao={{ situacao_selecionada }}{% endif %}" 
+                 class="px-3 py-1 bg-white/10 rounded-md hover:bg-white/20 text-white/80 text-sm">Anterior</a>
+            {% endif %}
+            
+            <span class="px-3 py-1 bg-[#0072BC] rounded-md text-white text-sm">
+              {{ funcionarios.number }} de {{ funcionarios.paginator.num_pages }}
+            </span>
+            
+            {% if funcionarios.has_next %}
+              <a href="?page={{ funcionarios.next_page_number }}{% if busca %}&q={{ busca }}{% endif %}{% if situacao_selecionada %}&situacao={{ situacao_selecionada }}{% endif %}" 
+                 class="px-3 py-1 bg-white/10 rounded-md hover:bg-white/20 text-white/80 text-sm">Próxima</a>
+              <a href="?page={{ funcionarios.paginator.num_pages }}{% if busca %}&q={{ busca }}{% endif %}{% if situacao_selecionada %}&situacao={{ situacao_selecionada }}{% endif %}" 
+                 class="px-3 py-1 bg-white/10 rounded-md hover:bg-white/20 text-white/80 text-sm">Última</a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  lucide.createIcons();
+</script>
+{% endblock %}
