@@ -14,7 +14,7 @@
   </style>
 </head>
 <body class="bg-[#00325A] text-white min-h-screen flex flex-col" onload="lucide.createIcons()">
-  <!-- Topbar -->
+  
   <header class="flex items-center justify-between px-6 py-4 border-b border-white/10">
     <div class="flex items-center gap-10">
       <img src="{% static 'logo.png' %}" alt="Portal GRS" class="h-10 w-auto">
@@ -26,7 +26,6 @@
     <a href="{% url 'login' %}" class="text-sm font-medium text-white hover:text-[#0072BC] transition">Acessar</a>
   </header>
 
-  <!-- Hero -->
   <section class="relative text-center py-20 px-6">
     <img src="https://images.unsplash.com/photo-1622612063021-116cc3407145?q=80&w=1470&auto=format&fit=crop" alt="" class="absolute inset-0 w-full h-full object-cover opacity-30 z-0">
     <div class="relative z-10">
@@ -41,7 +40,6 @@
     </div>
   </section>
 
-  <!-- Benefícios -->
   <section id="beneficios" class="py-20 px-6 max-w-7xl mx-auto">
     <h2 class="text-3xl font-semibold text-center mb-12">O que você encontra no Portal GRS</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -58,12 +56,12 @@
       <div class="bg-white/5 rounded-xl p-6 border border-white/10 hover:shadow-xl transition">
         <div class="mb-4"><i data-lucide="file-text" class="size-6 text-[#0072BC]"></i></div>
         <h3 class="text-xl font-semibold mb-2">Eventos do eSocial</h3>
-        <p class="text-white/80 text-sm">Gere e envie eventos de SST diretamente para o eSocial com conformidade total.</p>
+        <p class="text-white/80 text-sm">Gerencie e acompanhe eventos de SST do eSocial.</p>
       </div>
       <div class="bg-white/5 rounded-xl p-6 border border-white/10 hover:shadow-xl transition">
         <div class="mb-4"><i data-lucide="shield-alert" class="size-6 text-[#0072BC]"></i></div>
         <h3 class="text-xl font-semibold mb-2">CAT (Comunicação de Acidente)</h3>
-        <p class="text-white/80 text-sm">Emita, gerencie e acompanhe comunicações de acidente de forma centralizada.</p>
+        <p class="text-white/80 text-sm">Gerencie e acompanhe comunicações de acidente de forma centralizada.</p>
       </div>
       <div class="bg-white/5 rounded-xl p-6 border border-white/10 hover:shadow-xl transition">
         <div class="mb-4"><i data-lucide="users" class="size-6 text-[#0072BC]"></i></div>
@@ -78,7 +76,6 @@
     </div>
   </section>
 
-  <!-- Contato -->
   <section id="contato" class="bg-[#002844] py-16 px-6 text-center">
     <h2 class="text-2xl font-semibold mb-4">Quer acessar o Portal?</h2>
     <p class="text-white/70 max-w-xl mx-auto mb-6 text-sm">
@@ -94,4 +91,4 @@
     &copy; {% now "Y" %} Portal GRS. Todos os direitos reservados.
   </footer>
 </body>
-</html>
+</html> 
