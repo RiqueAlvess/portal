@@ -13,8 +13,8 @@ def dashboard(request):
         return redirect('login')
 
     total_funcionarios = Funcionario.objects.filter(empresa=empresa_ativa).count()
-    total_ferias = Funcionario.objects.filter(empresa=empresa_ativa, SITUACAO="FÉRIAS").count()
-    total_afastados = Funcionario.objects.filter(empresa=empresa_ativa, SITUACAO="AFASTADO").count()
+    total_ferias = Funcionario.objects.filter(empresa=empresa_ativa, SITUACAO="Férias").count()
+    total_afastados = Funcionario.objects.filter(empresa=empresa_ativa, SITUACAO="Afastado").count()
     sem_matricula = Funcionario.objects.filter(empresa=empresa_ativa, MATRICULAFUNCIONARIO__isnull=True)
 
     perc_ferias = round((total_ferias / total_funcionarios) * 100, 1) if total_funcionarios else 0
