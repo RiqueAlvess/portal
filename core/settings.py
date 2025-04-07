@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'usuarios',
     'dashboard',
+    'funcionarios',
 ]
 
 MIDDLEWARE = [
@@ -142,3 +143,17 @@ constants.ERROR: 'bg-red-50 text-red-700'
 
 
 LOGIN_URL = '/usuarios/login/'
+
+
+# Tempo de vida do cookie de sessão em segundos (exemplo: 30 minutos)
+SESSION_COOKIE_AGE = 1800
+
+# Se True, a sessão expira quando o navegador é fechado
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Se True, renova o tempo da sessão a cada requisição
+SESSION_SAVE_EVERY_REQUEST = True
+
+
+LOGIN_URL = '/usuarios/login/'
+LOGOUT_REDIRECT_URL = '/usuarios/login/'

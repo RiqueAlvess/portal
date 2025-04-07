@@ -1,16 +1,58 @@
 {% extends "base.html" %}
 
 {% block body %}
-  <div class="px-10 py-12 bg-[#00325A] min-h-screen">
-    <div class="max-w-4xl mx-auto">
-      <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8 shadow-md">
-        <h1 class="text-3xl font-bold text-white">
-          Bem-vindo, {{ request.user.first_name|default:request.user.username }}!
-        </h1>
-        <p class="text-[#F2F2F2] mt-2 text-base">
-          Você está logado no <strong>Portal GRS</strong>. Use o menu acima para navegar pelo sistema.
-        </p>
+<div class="px-10 py-12 bg-[#00325A] min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-2xl font-bold text-white mb-8">Resumo - {{ empresa_ativa.RAZAOSOCIAL }}</h1>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow card-hover">
+        <h3 class="text-sm text-white/70 mb-1">Funcionários</h3>
+        <p class="text-3xl font-bold text-white">{{ total_funcionarios }}</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow card-hover">
+        <h3 class="text-sm text-white/70 mb-1">Em Férias</h3>
+        <p class="text-2xl font-semibold text-white">{{ total_ferias }} <span class="text-[#0072BC] text-base">({{ perc_ferias }}%)</span></p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow card-hover">
+        <h3 class="text-sm text-white/70 mb-1">Afastados</h3>
+        <p class="text-2xl font-semibold text-white">{{ total_afastados }} <span class="text-[#0072BC] text-base">({{ perc_afastados }}%)</span></p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow card-hover">
+        <h3 class="text-sm text-white/70 mb-1">Sem Matrícula</h3>
+        <p class="text-2xl font-semibold text-white">{{ total_sem_matricula }} <span class="text-[#E30613] text-base">({{ perc_sem_matricula }}%)</span></p>
+      </div>
+    </div>
+
+    <div class="bg-white/5 border border-white/10 rounded-xl p-6">
+      <h2 class="text-xl text-white font-semibold mb-4">Colaboradores sem Matrícula</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-left text-sm text-white/90">
+          <thead class="bg-[#002844] text-white/60">
+            <tr>
+              <th class="py-3 px-4">Nome</th>
+              <th class="py-3 px-4">CPF</th>
+              <th class="py-3 px-4">Setor</th>
+              <th class="py-3 px-4">Situação</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/10">
+            {% for f in colaboradores_sem_matricula %}
+            <tr class="hover:bg-white/10">
+              <td class="py-3 px-4">{{ f.NOME }}</td>
+              <td class="py-3 px-4">{{ f.CPF }}</td>
+              <td class="py-3 px-4">{{ f.NOMESETOR }}</td>
+              <td class="py-3 px-4">{{ f.SITUACAO }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-4 text-white/70">Nenhum colaborador encontrado.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
+</div>
 {% endblock %}

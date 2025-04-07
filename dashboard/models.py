@@ -25,3 +25,15 @@ class UsuarioEmpresa(models.Model):
     
     class Meta:
         unique_together = ('usuario', 'empresa')
+        
+
+class EmpresaAtivaUsuario(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
+    empresa = models.ForeignKey(Empresa, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Empresa ativa do usuário"
+        verbose_name_plural = "Empresas ativas dos usuários"
+
+    def __str__(self):
+        return f"{self.usuario.username} → {self.empresa.RAZAOSOCIAL if self.empresa else 'Nenhuma'}"
