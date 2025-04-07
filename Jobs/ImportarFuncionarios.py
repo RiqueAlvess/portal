@@ -27,7 +27,6 @@ import logging
 import argparse
 import requests
 import time
-import concurrent.futures
 from urllib.parse import quote
 from datetime import datetime
 from dotenv import load_dotenv
@@ -371,14 +370,15 @@ def map_api_to_db_schema(api_data, company_id, company_code):
 
 def save_employees_to_database(employees, company_code):
     """
-    Save employee data to database using efficient batch processing.
+    Save employee data to database using efficient batch processing with UPSERT.
+    Utiliza a restrição unique_together = ['CODIGOEMPRESA', 'CODIGO'] do modelo Django.
     
     Args:
         employees (list): List of employee records.
         company_code (str): Company code.
         
     Returns:
-        tuple: (total_inserted, total_updated, total_errors) counts.
+        tuple: (total_processed, total_updated, total_errors) counts.
     """
     if not DATABASE_URL:
         raise ValueError("DATABASE_URL not configured")
@@ -390,7 +390,7 @@ def save_employees_to_database(employees, company_code):
     total_errors = 0
     
     # Agrupar em lotes maiores para processamento eficiente
-    batch_size = 500  # Aumentado para reduzir o número de operações de banco
+    batch_size = 500
     batches = [employees[i:i + batch_size] for i in range(0, len(employees), batch_size)]
     
     try:
@@ -399,7 +399,7 @@ def save_employees_to_database(employees, company_code):
         
         for batch in batches:
             try:
-                # Preparar para upsert em lote usando uma única query
+                # Preparar para upsert em lote usando a restrição unique_together do modelo
                 upsert_query = """
                 INSERT INTO funcionarios_funcionario (
                     empresa_id, "CODIGOEMPRESA", "NOMEEMPRESA", "CODIGO", "NOME", 
@@ -414,13 +414,10 @@ def save_employees_to_database(employees, company_code):
                     "COR", "ESCOLARIDADE", "NATURALIDADE", "RAMAL", "REGIMEREVEZAMENTO", 
                     "REGIMETRABALHO", "TELCOMERCIAL", "TURNOTRABALHO"
                 ) VALUES %s
-                ON CONFLICT ("CPF") 
-                WHERE "CPF" != ''
+                ON CONFLICT ("CODIGOEMPRESA", "CODIGO") 
                 DO UPDATE SET
                     empresa_id = EXCLUDED.empresa_id,
-                    "CODIGOEMPRESA" = EXCLUDED."CODIGOEMPRESA",
                     "NOMEEMPRESA" = EXCLUDED."NOMEEMPRESA",
-                    "CODIGO" = EXCLUDED."CODIGO",
                     "NOME" = EXCLUDED."NOME",
                     "CODIGOUNIDADE" = EXCLUDED."CODIGOUNIDADE",
                     "NOMEUNIDADE" = EXCLUDED."NOMEUNIDADE",
@@ -432,6 +429,7 @@ def save_employees_to_database(employees, company_code):
                     "CCUSTO" = EXCLUDED."CCUSTO",
                     "NOMECENTROCUSTO" = EXCLUDED."NOMECENTROCUSTO",
                     "MATRICULAFUNCIONARIO" = EXCLUDED."MATRICULAFUNCIONARIO",
+                    "CPF" = EXCLUDED."CPF",
                     "RG" = EXCLUDED."RG",
                     "UFRG" = EXCLUDED."UFRG",
                     "ORGAOEMISSORRG" = EXCLUDED."ORGAOEMISSORRG",
@@ -507,7 +505,7 @@ def save_employees_to_database(employees, company_code):
         connection.close()
         
         logger.info(f"Database update completed for company {company_code}: {total_processed} processed, {total_errors} errors")
-        return (total_processed, 0, total_errors)  # O segundo número era "updated", mas agora não diferenciamos mais
+        return (total_processed, 0, total_errors)
     
     except Exception as e:
         logger.error(f"Database error for company {company_code}: {str(e)}")
