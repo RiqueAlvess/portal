@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal GRS - Gestão de SST</title>
+  <link rel="icon" type="image/png" href="{% static 'icon.png' %}">
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-[#00325A] text-white min-h-screen flex flex-col" onload="lucide.createIcons()">
+  <!-- Topbar -->
+  <header class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+    <div class="flex items-center gap-10">
+      <img src="{% static 'logo.png' %}" alt="Portal GRS" class="h-10 w-auto">
+      <nav class="hidden md:flex gap-6 text-sm text-white/80">
+        <a href="#beneficios" class="hover:text-[#0072BC] transition">Benefícios</a>
+        <a href="#contato" class="hover:text-[#0072BC] transition">Contato</a>
+      </nav>
+    </div>
+    <a href="{% url 'login' %}" class="text-sm font-medium text-white hover:text-[#0072BC] transition">Acessar</a>
+  </header>
+
+  <!-- Hero -->
+  <section class="relative text-center py-20 px-6">
+    <img src="https://images.unsplash.com/photo-1622612063021-116cc3407145?q=80&w=1470&auto=format&fit=crop" alt="" class="absolute inset-0 w-full h-full object-cover opacity-30 z-0">
+    <div class="relative z-10">
+      <h1 class="text-5xl font-bold leading-tight mb-6">Transforme a Gestão de SST da sua Empresa</h1>
+      <p class="text-white/80 text-lg max-w-2xl mx-auto mb-8">
+        O Portal GRS é a solução completa para empresas que valorizam a saúde e segurança de seus colaboradores. 
+        Gestão inteligente, indicadores em tempo real e conformidade com o eSocial em um só lugar.
+      </p>
+      <a href="{% url 'login' %}" class="inline-block bg-[#0072BC] hover:bg-[#005c9d] text-white text-sm font-semibold px-6 py-3 rounded-md shadow">
+        Acessar o Sistema
+      </a>
+    </div>
+  </section>
+
+  <!-- Benefícios -->
+  <section id="beneficios" class="py-20 px-6 max-w-7xl mx-auto">
+    <h2 class="text-3xl font-semibold text-center mb-12">O que você encontra no Portal GRS</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+      <div class="bg-white/5 rounded-xl p-6 border border-white/10 hover:shadow-xl transition">
+        <div class="mb-4"><i data-lucide="activity" class="size-6 text-[#0072BC]"></i></div>
+        <h3 class="text-xl font-semibold mb-2">Dashboard de Absenteísmo</h3>
+        <p class="text-white/80 text-sm">Visualize indicadores atualizados sobre ausências, afastamentos e impacto no time.</p>
+      </div>
+      <div class="bg-white/5 rounded-xl p-6 border border-white/10 hover:shadow-xl transition">
+        <div class="mb-4"><i data-lucide="calendar-check" class="size-6 text-[#0072BC]"></i></div>
+        <h3 class="text-xl font-semibold mb-2">Convocação de Exames</h3>
+        <p class="text-white/80 text-sm">Organize e acompanhe os exames ocupacionais com precisão e agilidade.</p>
+      </div>
+      <div class="bg-white/5 rounded-xl p-6 border border-white/10 hover:shadow-xl transition">
+        <div class="mb-4"><i data-lucide="file-text" class="size-6 text-[#0072BC]"></i></div>
+        <h3 class="text-xl font-semibold mb-2">Eventos do eSocial</h3>
+        <p class="text-white/80 text-sm">Gere e envie eventos de SST diretamente para o eSocial com conformidade total.</p>
+      </div>
+      <div class="bg-white/5 rounded-xl p-6 border border-white/10 hover:shadow-xl transition">
+        <div class="mb-4"><i data-lucide="shield-alert" class="size-6 text-[#0072BC]"></i></div>
+        <h3 class="text-xl font-semibold mb-2">CAT (Comunicação de Acidente)</h3>
+        <p class="text-white/80 text-sm">Emita, gerencie e acompanhe comunicações de acidente de forma centralizada.</p>
+      </div>
+      <div class="bg-white/5 rounded-xl p-6 border border-white/10 hover:shadow-xl transition">
+        <div class="mb-4"><i data-lucide="users" class="size-6 text-[#0072BC]"></i></div>
+        <h3 class="text-xl font-semibold mb-2">Gestão de Colaboradores</h3>
+        <p class="text-white/80 text-sm">Todos os dados de SST dos seus colaboradores em um único ambiente seguro.</p>
+      </div>
+      <div class="bg-white/5 rounded-xl p-6 border border-white/10 hover:shadow-xl transition">
+        <div class="mb-4"><i data-lucide="phone" class="size-6 text-[#0072BC]"></i></div>
+        <h3 class="text-xl font-semibold mb-2">Atendimento Humanizado</h3>
+        <p class="text-white/80 text-sm">Clientes GRS contam com suporte e implantação personalizados e rápidos.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contato -->
+  <section id="contato" class="bg-[#002844] py-16 px-6 text-center">
+    <h2 class="text-2xl font-semibold mb-4">Quer acessar o Portal?</h2>
+    <p class="text-white/70 max-w-xl mx-auto mb-6 text-sm">
+      O acesso é exclusivo para clientes GRS. Se sua empresa já é cliente, entre em contato com nossa equipe 
+      através dos canais oficiais para solicitar o cadastro e liberação de usuário.
+    </p>
+    <a href="mailto:contato@grs.com.br" class="inline-block bg-[#0072BC] hover:bg-[#005c9d] px-6 py-3 rounded-md font-semibold text-white text-sm shadow">
+      Falar com a GRS
+    </a>
+  </section>
+
+  <footer class="text-center text-white/30 text-xs py-6">
+    &copy; {% now "Y" %} Portal GRS. Todos os direitos reservados.
+  </footer>
+</body>
+</html>
