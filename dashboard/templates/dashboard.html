@@ -24,29 +24,39 @@
       </div>
     </div>
 
-    <div class="bg-white/5 border border-white/10 rounded-xl p-6">
-      <h2 class="text-xl text-white font-semibold mb-4">Colaboradores sem Matrícula</h2>
+    <div class="bg-white/5 border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+      <div class="p-6">
+        <h2 class="text-xl text-white font-semibold mb-4">Colaboradores sem Matrícula</h2>
+      </div>
       <div class="overflow-x-auto">
-        <table class="min-w-full text-left text-sm text-white/90">
-          <thead class="bg-[#002844] text-white/60">
+        <table class="w-full border-collapse">
+          <thead class="bg-[#002844]">
             <tr>
-              <th class="py-3 px-4">Nome</th>
-              <th class="py-3 px-4">CPF</th>
-              <th class="py-3 px-4">Setor</th>
-              <th class="py-3 px-4">Situação</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Nome</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">CPF</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Setor</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Situação</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-white/10">
             {% for f in colaboradores_sem_matricula %}
-            <tr class="hover:bg-white/10">
-              <td class="py-3 px-4">{{ f.NOME }}</td>
-              <td class="py-3 px-4">{{ f.CPF }}</td>
-              <td class="py-3 px-4">{{ f.NOMESETOR }}</td>
-              <td class="py-3 px-4">{{ f.SITUACAO }}</td>
+            <tr class="hover:bg-white/5 transition-colors">
+              <td class="flex items-center gap-2 px-6 py-4 text-white/90">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/60">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                {{ f.NOME }}
+              </td>
+              <td class="px-6 py-4 text-white/90">{{ f.CPF }}</td>
+              <td class="px-6 py-4 text-white/90">{{ f.NOMESETOR }}</td>
+              <td class="px-6 py-4">
+                <span class="bg-[#E30613]/90 text-white px-3 py-1 rounded-full text-xs font-bold">{{ f.SITUACAO }}</span>
+              </td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="4" class="text-center py-4 text-white/70">Nenhum colaborador encontrado.</td>
+              <td colspan="4" class="text-center py-6 text-white/70">Nenhum colaborador encontrado.</td>
             </tr>
             {% endfor %}
           </tbody>
