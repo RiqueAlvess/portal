@@ -32,7 +32,7 @@ from urllib.parse import quote
 from datetime import datetime
 from dotenv import load_dotenv
 import psycopg2
-from psycopg2.extras import RealDictCursor
+from psycopg2.extras import RealDictCursor, execute_values
 from pathlib import Path
 
 # Parse command line arguments
@@ -369,92 +369,9 @@ def map_api_to_db_schema(api_data, company_id, company_code):
         logger.error(f"Error mapping API data to DB schema for company {company_code}: {str(e)}")
         raise
 
-def batch_save_employees(employees_batch, company_code, db_conn, db_cursor):
-    """
-    Save a batch of employees to the database.
-    
-    Args:
-        employees_batch (list): List of employee records to save.
-        company_code (str): Company code.
-        db_conn: Database connection.
-        db_cursor: Database cursor.
-        
-    Returns:
-        tuple: (inserted, updated, errors) counts.
-    """
-    inserted = 0
-    updated = 0
-    errors = 0
-    
-    for employee in employees_batch:
-        try:
-            db_conn.rollback()
-            
-            # Use named parameters consistently
-            db_cursor.execute(
-                """
-                SELECT id FROM funcionarios_funcionario 
-                WHERE (\"CPF\" = %(cpf)s AND \"CPF\" != '') 
-                OR (\"CODIGO\" = %(codigo)s AND \"CODIGOEMPRESA\" = %(codigo_empresa)s)
-                """,
-                {
-                    'cpf': employee['CPF'],
-                    'codigo': employee['CODIGO'],
-                    'codigo_empresa': employee['CODIGOEMPRESA']
-                }
-            )
-            existing = db_cursor.fetchone()
-            
-            if existing:
-                update_fields = []
-                update_values = {}
-                
-                for key, value in employee.items():
-                    if key not in ['id']:
-                        update_fields.append(f"\"{key}\" = %({key})s")
-                        update_values[key] = value
-                
-                # Add the id parameter for the WHERE clause
-                update_values['existing_id'] = existing['id']
-                
-                update_query = f"""
-                UPDATE funcionarios_funcionario SET 
-                    {", ".join(update_fields)}
-                WHERE id = %(existing_id)s
-                """
-                db_cursor.execute(update_query, update_values)
-                updated += 1
-            else:
-                fields = ', '.join([f"\"{key}\"" for key in employee.keys()])
-                placeholders = ', '.join([f"%({key})s" for key in employee.keys()])
-                
-                insert_query = f"""
-                INSERT INTO funcionarios_funcionario ({fields})
-                VALUES ({placeholders})
-                """
-                db_cursor.execute(insert_query, employee)
-                inserted += 1
-            
-            db_conn.commit()
-            
-        except Exception as e:
-            db_conn.rollback()
-            errors += 1
-            logger.error(f"Error processing employee {employee.get('NOME', 'Unknown')} (CPF: {employee.get('CPF', 'Unknown')}): {str(e)}")
-    
-    return inserted, updated, errors
-
-def cleanup_connection(future, conn, cursor):
-    """Clean up database connection resources."""
-    try:
-        cursor.close()
-        conn.close()
-    except Exception as e:
-        logger.error(f"Error during connection cleanup: {str(e)}")
-
 def save_employees_to_database(employees, company_code):
     """
-    Save employee data to database using parallel processing.
+    Save employee data to database using efficient batch processing.
     
     Args:
         employees (list): List of employee records.
@@ -469,44 +386,128 @@ def save_employees_to_database(employees, company_code):
     if not employees:
         return (0, 0, 0)
     
-    batch_size = min(max(1, len(employees) // 10), 100)
-    batches = [employees[i:i + batch_size] for i in range(0, len(employees), batch_size)]
-    
-    total_inserted = 0
-    total_updated = 0
+    total_processed = 0
     total_errors = 0
     
+    # Agrupar em lotes maiores para processamento eficiente
+    batch_size = 500  # Aumentado para reduzir o número de operações de banco
+    batches = [employees[i:i + batch_size] for i in range(0, len(employees), batch_size)]
+    
     try:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            futures = []
-            
-            for batch in batches:
-                batch_conn = get_database_connection()
-                batch_cursor = batch_conn.cursor(cursor_factory=RealDictCursor)
-                
-                future = executor.submit(
-                    batch_save_employees, 
-                    batch, 
-                    company_code,
-                    batch_conn,
-                    batch_cursor
-                )
-                future.add_done_callback(
-                    lambda f, conn=batch_conn, cursor=batch_cursor: cleanup_connection(f, conn, cursor)
-                )
-                futures.append(future)
-            
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    inserted, updated, errors = future.result()
-                    total_inserted += inserted
-                    total_updated += updated
-                    total_errors += errors
-                except Exception as e:
-                    logger.error(f"Error in batch processing: {str(e)}")
+        connection = get_database_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
         
-        logger.info(f"Database update completed for company {company_code}: {total_inserted} inserted, {total_updated} updated, {total_errors} errors")
-        return (total_inserted, total_updated, total_errors)
+        for batch in batches:
+            try:
+                # Preparar para upsert em lote usando uma única query
+                upsert_query = """
+                INSERT INTO funcionarios_funcionario (
+                    empresa_id, "CODIGOEMPRESA", "NOMEEMPRESA", "CODIGO", "NOME", 
+                    "CODIGOUNIDADE", "NOMEUNIDADE", "CODIGOSETOR", "NOMESETOR", 
+                    "CODIGOCARGO", "NOMECARGO", "CBOCARGO", "CCUSTO", "NOMECENTROCUSTO", 
+                    "MATRICULAFUNCIONARIO", "CPF", "RG", "UFRG", "ORGAOEMISSORRG", 
+                    "SITUACAO", "SEXO", "PIS", "CTPS", "SERIECTPS", "ESTADOCIVIL", 
+                    "TIPOCONTATACAO", "DATA_NASCIMENTO", "DATA_ADMISSAO", "DATA_DEMISSAO", 
+                    "ENDERECO", "NUMERO_ENDERECO", "BAIRRO", "CIDADE", "UF", "CEP", 
+                    "TELEFONERESIDENCIAL", "TELEFONECELULAR", "EMAIL", "DEFICIENTE", 
+                    "DEFICIENCIA", "NM_MAE_FUNCIONARIO", "DATAULTALTERACAO", "MATRICULARH", 
+                    "COR", "ESCOLARIDADE", "NATURALIDADE", "RAMAL", "REGIMEREVEZAMENTO", 
+                    "REGIMETRABALHO", "TELCOMERCIAL", "TURNOTRABALHO"
+                ) VALUES %s
+                ON CONFLICT ("CPF") 
+                WHERE "CPF" != ''
+                DO UPDATE SET
+                    empresa_id = EXCLUDED.empresa_id,
+                    "CODIGOEMPRESA" = EXCLUDED."CODIGOEMPRESA",
+                    "NOMEEMPRESA" = EXCLUDED."NOMEEMPRESA",
+                    "CODIGO" = EXCLUDED."CODIGO",
+                    "NOME" = EXCLUDED."NOME",
+                    "CODIGOUNIDADE" = EXCLUDED."CODIGOUNIDADE",
+                    "NOMEUNIDADE" = EXCLUDED."NOMEUNIDADE",
+                    "CODIGOSETOR" = EXCLUDED."CODIGOSETOR",
+                    "NOMESETOR" = EXCLUDED."NOMESETOR",
+                    "CODIGOCARGO" = EXCLUDED."CODIGOCARGO",
+                    "NOMECARGO" = EXCLUDED."NOMECARGO",
+                    "CBOCARGO" = EXCLUDED."CBOCARGO",
+                    "CCUSTO" = EXCLUDED."CCUSTO",
+                    "NOMECENTROCUSTO" = EXCLUDED."NOMECENTROCUSTO",
+                    "MATRICULAFUNCIONARIO" = EXCLUDED."MATRICULAFUNCIONARIO",
+                    "RG" = EXCLUDED."RG",
+                    "UFRG" = EXCLUDED."UFRG",
+                    "ORGAOEMISSORRG" = EXCLUDED."ORGAOEMISSORRG",
+                    "SITUACAO" = EXCLUDED."SITUACAO",
+                    "SEXO" = EXCLUDED."SEXO",
+                    "PIS" = EXCLUDED."PIS",
+                    "CTPS" = EXCLUDED."CTPS",
+                    "SERIECTPS" = EXCLUDED."SERIECTPS",
+                    "ESTADOCIVIL" = EXCLUDED."ESTADOCIVIL",
+                    "TIPOCONTATACAO" = EXCLUDED."TIPOCONTATACAO",
+                    "DATA_NASCIMENTO" = EXCLUDED."DATA_NASCIMENTO",
+                    "DATA_ADMISSAO" = EXCLUDED."DATA_ADMISSAO",
+                    "DATA_DEMISSAO" = EXCLUDED."DATA_DEMISSAO",
+                    "ENDERECO" = EXCLUDED."ENDERECO",
+                    "NUMERO_ENDERECO" = EXCLUDED."NUMERO_ENDERECO",
+                    "BAIRRO" = EXCLUDED."BAIRRO",
+                    "CIDADE" = EXCLUDED."CIDADE",
+                    "UF" = EXCLUDED."UF",
+                    "CEP" = EXCLUDED."CEP",
+                    "TELEFONERESIDENCIAL" = EXCLUDED."TELEFONERESIDENCIAL",
+                    "TELEFONECELULAR" = EXCLUDED."TELEFONECELULAR",
+                    "EMAIL" = EXCLUDED."EMAIL",
+                    "DEFICIENTE" = EXCLUDED."DEFICIENTE",
+                    "DEFICIENCIA" = EXCLUDED."DEFICIENCIA",
+                    "NM_MAE_FUNCIONARIO" = EXCLUDED."NM_MAE_FUNCIONARIO",
+                    "DATAULTALTERACAO" = EXCLUDED."DATAULTALTERACAO",
+                    "MATRICULARH" = EXCLUDED."MATRICULARH",
+                    "COR" = EXCLUDED."COR",
+                    "ESCOLARIDADE" = EXCLUDED."ESCOLARIDADE",
+                    "NATURALIDADE" = EXCLUDED."NATURALIDADE",
+                    "RAMAL" = EXCLUDED."RAMAL",
+                    "REGIMEREVEZAMENTO" = EXCLUDED."REGIMEREVEZAMENTO",
+                    "REGIMETRABALHO" = EXCLUDED."REGIMETRABALHO",
+                    "TELCOMERCIAL" = EXCLUDED."TELCOMERCIAL",
+                    "TURNOTRABALHO" = EXCLUDED."TURNOTRABALHO";
+                """
+                
+                # Extrair valores na ordem correta
+                values = []
+                for employee in batch:
+                    values.append((
+                        employee['empresa_id'], employee['CODIGOEMPRESA'], employee['NOMEEMPRESA'], 
+                        employee['CODIGO'], employee['NOME'], employee['CODIGOUNIDADE'], 
+                        employee['NOMEUNIDADE'], employee['CODIGOSETOR'], employee['NOMESETOR'], 
+                        employee['CODIGOCARGO'], employee['NOMECARGO'], employee['CBOCARGO'], 
+                        employee['CCUSTO'], employee['NOMECENTROCUSTO'], employee['MATRICULAFUNCIONARIO'], 
+                        employee['CPF'], employee['RG'], employee['UFRG'], employee['ORGAOEMISSORRG'], 
+                        employee['SITUACAO'], employee['SEXO'], employee['PIS'], employee['CTPS'], 
+                        employee['SERIECTPS'], employee['ESTADOCIVIL'], employee['TIPOCONTATACAO'], 
+                        employee['DATA_NASCIMENTO'], employee['DATA_ADMISSAO'], employee['DATA_DEMISSAO'], 
+                        employee['ENDERECO'], employee['NUMERO_ENDERECO'], employee['BAIRRO'], 
+                        employee['CIDADE'], employee['UF'], employee['CEP'], employee['TELEFONERESIDENCIAL'], 
+                        employee['TELEFONECELULAR'], employee['EMAIL'], employee['DEFICIENTE'], 
+                        employee['DEFICIENCIA'], employee['NM_MAE_FUNCIONARIO'], employee['DATAULTALTERACAO'], 
+                        employee['MATRICULARH'], employee['COR'], employee['ESCOLARIDADE'], 
+                        employee['NATURALIDADE'], employee['RAMAL'], employee['REGIMEREVEZAMENTO'], 
+                        employee['REGIMETRABALHO'], employee['TELCOMERCIAL'], employee['TURNOTRABALHO']
+                    ))
+                
+                # Executar a operação em lote
+                execute_values(cursor, upsert_query, values)
+                connection.commit()
+                
+                total_processed += len(batch)
+                logger.info(f"Batch processed successfully: {len(batch)} employees for company {company_code}")
+                
+            except Exception as e:
+                connection.rollback()
+                total_errors += len(batch)
+                logger.error(f"Error processing batch for company {company_code}: {str(e)}")
+        
+        cursor.close()
+        connection.close()
+        
+        logger.info(f"Database update completed for company {company_code}: {total_processed} processed, {total_errors} errors")
+        return (total_processed, 0, total_errors)  # O segundo número era "updated", mas agora não diferenciamos mais
     
     except Exception as e:
         logger.error(f"Database error for company {company_code}: {str(e)}")
@@ -536,8 +537,8 @@ def process_company(company, include_inactive=False):
         employees = map_api_to_db_schema(api_data, company_id, company_code)
         
         if employees:
-            inserted, updated, errors = save_employees_to_database(employees, company_code)
-            return company_code, inserted, updated, errors
+            processed, updated, errors = save_employees_to_database(employees, company_code)
+            return company_code, processed, updated, errors
         else:
             return company_code, 0, 0, 0
     
@@ -553,7 +554,7 @@ def main():
     try:
         companies = get_companies_from_db(args.empresa) if args.empresa else get_companies_from_db()
         
-        total_inserted = 0
+        total_processed = 0
         total_updated = 0
         total_errors = 0
         processed_companies = 0
@@ -562,11 +563,11 @@ def main():
             if not company:
                 continue
                 
-            company_code, inserted, updated, errors = process_company(
+            company_code, processed, updated, errors = process_company(
                 company, include_inactive=args.all
             )
             
-            total_inserted += inserted
+            total_processed += processed
             total_updated += updated
             total_errors += errors
             processed_companies += 1
@@ -576,7 +577,7 @@ def main():
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds()
         logger.info(f"Import completed in {duration:.2f} seconds")
-        logger.info(f"Total employees: {total_inserted} inserted, {total_updated} updated, {total_errors} errors")
+        logger.info(f"Total employees: {total_processed} processed, {total_errors} errors")
         
     except Exception as e:
         logger.error(f"Import failed: {str(e)}")
