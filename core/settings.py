@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'usuarios',
     'dashboard',
     'funcionarios',
+    'absenteismo',
 ]
 
 MIDDLEWARE = [
