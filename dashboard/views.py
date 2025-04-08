@@ -4,22 +4,27 @@ from django.views.decorators.http import require_POST
 from dashboard.models import EmpresaAtivaUsuario, UsuarioEmpresa, Empresa
 from funcionarios.models import Funcionario
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from dashboard.models import EmpresaAtivaUsuario
+from funcionarios.models import Funcionario
+
 @login_required
 def dashboard(request):
-    empresa_ativa = None
     try:
         empresa_ativa = EmpresaAtivaUsuario.objects.get(usuario=request.user).empresa
     except EmpresaAtivaUsuario.DoesNotExist:
         return redirect('login')
 
-    total_funcionarios = Funcionario.objects.filter(empresa=empresa_ativa).count()
-    total_ferias = Funcionario.objects.filter(empresa=empresa_ativa, SITUACAO="Férias").count()
-    total_afastados = Funcionario.objects.filter(empresa=empresa_ativa, SITUACAO="Afastado").count()
+    funcionarios = Funcionario.objects.filter(
+        empresa=empresa_ativa
+    ).exclude(NOME__iexact='nomegenerico')
 
-    sem_matricula = Funcionario.objects.filter(
-        empresa=empresa_ativa,
-        MATRICULAFUNCIONARIO__startswith='semmatricula'
-    )
+    total_funcionarios = funcionarios.count()
+    total_ferias = funcionarios.filter(SITUACAO="Férias").count()
+    total_afastados = funcionarios.filter(SITUACAO="Afastado").count()
+
+    sem_matricula = funcionarios.filter(MATRICULAFUNCIONARIO__startswith='semmatricula')
 
     perc_ferias = round((total_ferias / total_funcionarios) * 100, 1) if total_funcionarios else 0
     perc_afastados = round((total_afastados / total_funcionarios) * 100, 1) if total_funcionarios else 0
@@ -36,6 +41,8 @@ def dashboard(request):
         "perc_sem_matricula": perc_sem_matricula,
         "colaboradores_sem_matricula": sem_matricula,
     })
+
+
 
 @require_POST
 @login_required

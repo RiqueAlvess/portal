@@ -4,6 +4,9 @@ from dashboard.models import EmpresaAtivaUsuario
 from .models import Funcionario
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+from django.db.models import Q
+
+
 @login_required
 def funcionarios(request):
     try:
@@ -13,29 +16,37 @@ def funcionarios(request):
         
     busca = request.GET.get('q', '')
     situacao = request.GET.get('situacao', '')
-    
 
-    funcionarios_queryset = Funcionario.objects.filter(empresa=empresa_ativa)
+    funcionarios_queryset = Funcionario.objects.filter(
+        empresa=empresa_ativa
+    ).exclude(
+        NOME__icontains='nomegenerico'
+    )
+
     if busca:
-        funcionarios_queryset = funcionarios_queryset.filter(NOME__icontains=busca) | funcionarios_queryset.filter(CPF__icontains=busca)
+        funcionarios_queryset = funcionarios_queryset.filter(
+            Q(NOME__icontains=busca) | Q(CPF__icontains=busca)
+        )
+
     if situacao:
         funcionarios_queryset = funcionarios_queryset.filter(SITUACAO=situacao)
-    
 
-    paginator = Paginator(funcionarios_queryset, 10)  
+    paginator = Paginator(funcionarios_queryset, 10)
     page = request.GET.get('page')
-    
+
     try:
         funcionarios_paginados = paginator.page(page)
     except PageNotAnInteger:
-        
         funcionarios_paginados = paginator.page(1)
     except EmptyPage:
-      
         funcionarios_paginados = paginator.page(paginator.num_pages)
-    
-    situacoes_disponiveis = Funcionario.objects.filter(empresa=empresa_ativa).exclude(SITUACAO__isnull=True).values_list('SITUACAO', flat=True).distinct()
-    
+
+    situacoes_disponiveis = Funcionario.objects.filter(
+        empresa=empresa_ativa
+    ).exclude(
+        SITUACAO__isnull=True
+    ).values_list('SITUACAO', flat=True).distinct()
+
     return render(request, 'funcionarios.html', {
         'funcionarios': funcionarios_paginados,
         'situacoes': situacoes_disponiveis,
