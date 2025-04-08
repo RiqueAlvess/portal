@@ -14,8 +14,11 @@ class Absenteismo(models.Model):
         (2, 'Feminino'),
     )
    
-    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='absenteismos')
-    CODIGOEMPRESA = models.CharField(max_length=20)
+    empresa = models.ForeignKey(
+        Empresa, 
+        on_delete=models.CASCADE, 
+        related_name='absenteismos'
+    )
     
     funcionario = models.ForeignKey(
         Funcionario, 
@@ -24,11 +27,14 @@ class Absenteismo(models.Model):
         blank=True, 
         related_name='absenteismos'
     )
+    
+    codigo_empresa = models.CharField(max_length=20, db_column='codigo_empresa')
   
     MATRICULA_FUNC = models.CharField(max_length=30, null=True, blank=True)
+    NOME_FUNCIONARIO = models.CharField(max_length=120, null=True, blank=True)
+    
     UNIDADE = models.CharField(max_length=130, null=True, blank=True)
     SETOR = models.CharField(max_length=130, null=True, blank=True)
-    NOME_FUNCIONARIO = models.CharField(max_length=120, null=True, blank=True)
 
     DT_NASCIMENTO = models.DateField(null=True, blank=True)
     SEXO = models.IntegerField(choices=SEXO_CHOICES, null=True, blank=True, default=0)
@@ -54,12 +60,12 @@ class Absenteismo(models.Model):
         verbose_name_plural = "Absenteísmos"
         ordering = ['-DT_INICIO_ATESTADO']
         indexes = [
-            models.Index(fields=['CODIGOEMPRESA']),
+            models.Index(fields=['codigo_empresa']),
             models.Index(fields=['MATRICULA_FUNC']),
+            models.Index(fields=['funcionario']),
             models.Index(fields=['DT_INICIO_ATESTADO']),
             models.Index(fields=['DT_FIM_ATESTADO']),
             models.Index(fields=['CID_PRINCIPAL']),
-            models.Index(fields=['funcionario']),  
         ]
     
     def __str__(self):
@@ -72,22 +78,23 @@ class Absenteismo(models.Model):
             self.DIAS_AFASTADOS = delta.days + 1
         
         if self.empresa:
-            self.CODIGOEMPRESA = self.empresa.CODIGO
+            self.codigo_empresa = self.empresa.CODIGO
         
-        if self.MATRICULA_FUNC and not self.funcionario:
+        if not self.funcionario and self.MATRICULA_FUNC and self.codigo_empresa:
             try:
                 func = Funcionario.objects.filter(
                     MATRICULAFUNCIONARIO=self.MATRICULA_FUNC,
-                    CODIGOEMPRESA=self.CODIGOEMPRESA
+                    CODIGOEMPRESA=self.codigo_empresa
                 ).first()
                 
                 if func:
                     self.funcionario = func
-            except:
-                pass
+            except Exception as e:
+                print(f"Erro ao vincular funcionário: {e}")
         
-        if self.funcionario and not self.NOME_FUNCIONARIO:
-            self.NOME_FUNCIONARIO = self.funcionario.NOME
+        if self.funcionario:
+            if not self.NOME_FUNCIONARIO:
+                self.NOME_FUNCIONARIO = self.funcionario.NOME
             if not self.DT_NASCIMENTO:
                 self.DT_NASCIMENTO = self.funcionario.DATA_NASCIMENTO
             if not self.SEXO and self.funcionario.SEXO:
@@ -95,21 +102,4 @@ class Absenteismo(models.Model):
             if not self.MATRICULA_FUNC:
                 self.MATRICULA_FUNC = self.funcionario.MATRICULAFUNCIONARIO
         
-        elif self.MATRICULA_FUNC and not self.NOME_FUNCIONARIO:
-            try:
-                func = Funcionario.objects.filter(
-                    MATRICULAFUNCIONARIO=self.MATRICULA_FUNC,
-                    CODIGOEMPRESA=self.CODIGOEMPRESA
-                ).first()
-                
-                if func:
-                    self.NOME_FUNCIONARIO = func.NOME
-                    if not self.DT_NASCIMENTO:
-                        self.DT_NASCIMENTO = func.DATA_NASCIMENTO
-                    if not self.SEXO and func.SEXO:
-                        self.SEXO = func.SEXO
-                    self.funcionario = func
-            except:
-                pass
-                
         super().save(*args, **kwargs)
