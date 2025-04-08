@@ -186,9 +186,9 @@ def get_employee_data(company_code, tipo_saida='json', include_inactive=False):
             'chave': SOC_CHAVE,
             'tipoSaida': tipo_saida,
             "ativo": "Sim",
-            "inativo": "Sim" if include_inactive else "",
+            "inativo": "",
             "afastado": "Sim",
-            "pendente": "Sim",
+            "pendente": "",
             "ferias": "Sim"
         }
 
@@ -323,6 +323,52 @@ def map_employee_to_db_schema(employee_data, company_id, company_code):
         logger.error(f"Error mapping employee data: {str(e)}")
         raise
 
+def get_next_matricula_counter(company_code):
+    """
+    Get the next available counter for 'semmatricula' for a specific company.
+    
+    Args:
+        company_code (str): Company code.
+        
+    Returns:
+        int: Next available counter.
+    """
+    try:
+        connection = get_database_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+        
+        # Query to find the highest existing counter
+        cursor.execute("""
+            SELECT "MATRICULAFUNCIONARIO" 
+            FROM funcionarios_funcionario 
+            WHERE "CODIGOEMPRESA" = %s 
+            AND "MATRICULAFUNCIONARIO" LIKE 'semmatricula%%'
+        """, (company_code,))
+        
+        results = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        
+        if not results:
+            return 1
+        
+        max_counter = 0
+        for result in results:
+            matricula = result.get('MATRICULAFUNCIONARIO', '')
+            try:
+                # Extract the numeric part after 'semmatricula'
+                counter_str = matricula.replace('semmatricula', '')
+                counter = int(counter_str) if counter_str.isdigit() else 0
+                max_counter = max(max_counter, counter)
+            except (ValueError, AttributeError):
+                continue
+        
+        return max_counter + 1
+    
+    except Exception as e:
+        logger.error(f"Error getting next matricula counter for company {company_code}: {str(e)}")
+        return 1  # Default to 1 if there's an error
+
 def map_api_to_db_schema(api_data, company_id, company_code):
     """
     Map API response data to database schema for all employees.
@@ -350,6 +396,13 @@ def map_api_to_db_schema(api_data, company_id, company_code):
                     break
             if not data_list:
                 data_list = [api_data]
+
+        # Get the next available matricula counter for this company
+        next_matricula_counter = get_next_matricula_counter(company_code)
+        
+        # Track employees needing a generated matricula
+        employees_without_matricula = []
+        employees_with_matricula = []
         
         for item in data_list:
             if not isinstance(item, dict):
@@ -357,11 +410,26 @@ def map_api_to_db_schema(api_data, company_id, company_code):
             
             try:
                 employee = map_employee_to_db_schema(item, company_id, company_code)
-                employees.append(employee)
+                
+                # Check if the employee has a matricula
+                if not employee['MATRICULAFUNCIONARIO'] or employee['MATRICULAFUNCIONARIO'].strip() == '':
+                    employees_without_matricula.append(employee)
+                else:
+                    employees_with_matricula.append(employee)
+                    
             except Exception as e:
                 logger.error(f"Error processing employee {item.get('NOME', 'Unknown')}: {str(e)}")
         
-        logger.info(f"Processed {len(employees)} employees for company {company_code}")
+        # Assign generated matriculas to employees without one
+        for i, employee in enumerate(employees_without_matricula):
+            matricula = f"semmatricula{next_matricula_counter + i}"
+            employee['MATRICULAFUNCIONARIO'] = matricula
+            logger.info(f"Generated matricula '{matricula}' for employee {employee['NOME']} (ID: {employee['CODIGO']}) from company {company_code}")
+        
+        # Combine both lists
+        employees = employees_with_matricula + employees_without_matricula
+        
+        logger.info(f"Processed {len(employees)} employees for company {company_code} ({len(employees_without_matricula)} with generated matriculas)")
         return employees
     
     except Exception as e:
@@ -428,7 +496,12 @@ def save_employees_to_database(employees, company_code):
                     "CBOCARGO" = EXCLUDED."CBOCARGO",
                     "CCUSTO" = EXCLUDED."CCUSTO",
                     "NOMECENTROCUSTO" = EXCLUDED."NOMECENTROCUSTO",
-                    "MATRICULAFUNCIONARIO" = EXCLUDED."MATRICULAFUNCIONARIO",
+                    "MATRICULAFUNCIONARIO" = 
+                        CASE 
+                            WHEN funcionarios_funcionario."MATRICULAFUNCIONARIO" IS NULL OR funcionarios_funcionario."MATRICULAFUNCIONARIO" = '' 
+                            THEN EXCLUDED."MATRICULAFUNCIONARIO"
+                            ELSE funcionarios_funcionario."MATRICULAFUNCIONARIO" 
+                        END,
                     "CPF" = EXCLUDED."CPF",
                     "RG" = EXCLUDED."RG",
                     "UFRG" = EXCLUDED."UFRG",
