@@ -15,7 +15,11 @@ def dashboard(request):
     total_funcionarios = Funcionario.objects.filter(empresa=empresa_ativa).count()
     total_ferias = Funcionario.objects.filter(empresa=empresa_ativa, SITUACAO="Férias").count()
     total_afastados = Funcionario.objects.filter(empresa=empresa_ativa, SITUACAO="Afastado").count()
-    sem_matricula = Funcionario.objects.filter(empresa=empresa_ativa, MATRICULAFUNCIONARIO__isnull=True)
+
+    sem_matricula = Funcionario.objects.filter(
+        empresa=empresa_ativa,
+        MATRICULAFUNCIONARIO__startswith='semmatricula'
+    )
 
     perc_ferias = round((total_ferias / total_funcionarios) * 100, 1) if total_funcionarios else 0
     perc_afastados = round((total_afastados / total_funcionarios) * 100, 1) if total_funcionarios else 0
@@ -32,7 +36,6 @@ def dashboard(request):
         "perc_sem_matricula": perc_sem_matricula,
         "colaboradores_sem_matricula": sem_matricula,
     })
-
 
 @require_POST
 @login_required
