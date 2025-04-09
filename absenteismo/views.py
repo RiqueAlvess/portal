@@ -27,7 +27,7 @@ def absenteismo(request):
     elif periodo == "mes":
         data_inicio = hoje - timedelta(days=30)
         dias_periodo = 30
-    else:  # semestre
+    else:
         data_inicio = hoje - timedelta(days=180)
         dias_periodo = 180
 
@@ -44,7 +44,7 @@ def absenteismo(request):
     
     if tipo_duracao:
         if tipo_duracao == "horas":
-            atestados = atestados.filter(TIPO_ATESTADO=1)  # Declaração em horas
+            atestados = atestados.filter(TIPO_ATESTADO=1)
         elif tipo_duracao == "1-3":
             atestados = atestados.filter(DIAS_AFASTADOS__gte=1, DIAS_AFASTADOS__lte=3, TIPO_ATESTADO=0)
         elif tipo_duracao == "4-7":
@@ -55,26 +55,24 @@ def absenteismo(request):
             atestados = atestados.filter(DIAS_AFASTADOS__gte=15, TIPO_ATESTADO=0)
 
     setores = atestados.values_list('SETOR', flat=True).distinct().order_by('SETOR')
-
     VALOR_HORA = 8.02
 
     total_atestados = atestados.count()
-    total_dias = atestados.aggregate(total=Sum("DIAS_AFASTADOS"))["total"] or 0
+    total_dias = atestados.aggregate(total=Coalesce(Sum("DIAS_AFASTADOS"), 0))["total"]
     total_funcionarios = Funcionario.objects.filter(
         empresa=empresa_ativa
     ).exclude(NOME__icontains="nomegenerico").count()
 
     media_dias = total_dias / total_atestados if total_atestados else 0
     media_atestados = total_atestados / total_funcionarios if total_funcionarios else 0
-
-    total_horas_afastadas = total_dias * 8  # 8 working hours per day
+    total_horas_afastadas = total_dias * 8
     impacto_financeiro = total_horas_afastadas * VALOR_HORA
 
     bradford = atestados.values(
         'MATRICULA_FUNC', 'NOME_FUNCIONARIO'
     ).annotate(
         episodios=Count('id'),
-        total_dias=Sum('DIAS_AFASTADOS')
+        total_dias=Coalesce(Sum('DIAS_AFASTADOS'), 0)
     ).annotate(
         bradford=F('episodios') * F('episodios') * F('total_dias'),
         risco=Case(
@@ -87,9 +85,7 @@ def absenteismo(request):
 
     bradford_critico_count = bradford.filter(risco='ALTO').count()
 
-    funcionarios_com_atestados = atestados.values('funcionario').annotate(
-        count=Count('id')
-    )
+    funcionarios_com_atestados = atestados.values('funcionario').annotate(count=Count('id'))
     funcionarios_com_reincidencia = funcionarios_com_atestados.filter(count__gt=1).count()
     taxa_reincidencia = (funcionarios_com_reincidencia / funcionarios_com_atestados.count() * 100) if funcionarios_com_atestados.count() else 0
 
@@ -110,16 +106,12 @@ def absenteismo(request):
         count=Count('id')
     ).order_by('dia_semana')
 
-    impacto_por_cid = atestados.filter(
-        GRUPO_PATOLOGICO__isnull=False
-    ).exclude(
+    impacto_por_cid = atestados.values('GRUPO_PATOLOGICO').exclude(
         GRUPO_PATOLOGICO=''
-    ).values('GRUPO_PATOLOGICO').annotate(
+    ).annotate(
         dias=Coalesce(Sum('DIAS_AFASTADOS'), 0),
-        horas=Count('id', filter=Q(TIPO_ATESTADO=1)) * 4,  # Estimated 4 hours per hour attestation
+        horas=Count('id', filter=Q(TIPO_ATESTADO=1)) * 4,
         impacto=((F('dias') * 8) + F('horas')) * VALOR_HORA
-    ).filter(
-        impacto__gt=0  # Only include entries with impact greater than 0
     ).order_by('-impacto')[:10]
 
     absenteismo_por_setor = atestados.values('SETOR').annotate(
@@ -127,11 +119,9 @@ def absenteismo(request):
         dias=Coalesce(Sum('DIAS_AFASTADOS'), 0)
     ).order_by('-dias')[:10]
 
-    absenteismo_por_cid = atestados.filter(
-        CID_PRINCIPAL__isnull=False
-    ).exclude(
+    absenteismo_por_cid = atestados.values('CID_PRINCIPAL', 'DESCRICAO_CID').exclude(
         CID_PRINCIPAL=''
-    ).values('CID_PRINCIPAL', 'DESCRICAO_CID', 'GRUPO_PATOLOGICO').annotate(
+    ).annotate(
         count=Count('id'),
         dias=Coalesce(Sum('DIAS_AFASTADOS'), 0)
     ).order_by('-count')[:10]
@@ -152,8 +142,6 @@ def absenteismo(request):
     cids_por_genero = {}
     for sexo_value, sexo_nome in Absenteismo.SEXO_CHOICES:
         top_cids = atestados.filter(SEXO=sexo_value).exclude(
-            GRUPO_PATOLOGICO__isnull=True
-        ).exclude(
             GRUPO_PATOLOGICO=''
         ).values('GRUPO_PATOLOGICO').annotate(
             count=Count('id')
@@ -166,16 +154,12 @@ def absenteismo(request):
         dias=Coalesce(Sum('DIAS_AFASTADOS'), 0),
         horas=Count('id', filter=Q(TIPO_ATESTADO=1)) * 4,
         custo=((F('dias') * 8) + F('horas')) * VALOR_HORA
-    ).filter(
-        custo__gt=0  # Only include entries with cost greater than 0
     ).order_by('-custo')[:10]
 
     cids_por_prefixo_setor = {}
     setor_prefixos = ['F', 'M', 'S', 'T']
     for prefixo in setor_prefixos:
         top_cids = atestados.filter(SETOR__startswith=prefixo).exclude(
-            GRUPO_PATOLOGICO__isnull=True
-        ).exclude(
             GRUPO_PATOLOGICO=''
         ).values('GRUPO_PATOLOGICO').annotate(
             count=Count('id')
@@ -200,8 +184,7 @@ def absenteismo(request):
         
         age_cids = atestados.filter(
             funcionario__DATA_NASCIMENTO__gte=min_date,
-            funcionario__DATA_NASCIMENTO__lte=max_date,
-            GRUPO_PATOLOGICO__isnull=False
+            funcionario__DATA_NASCIMENTO__lte=max_date
         ).exclude(
             GRUPO_PATOLOGICO=''
         ).values('GRUPO_PATOLOGICO').annotate(
@@ -215,6 +198,13 @@ def absenteismo(request):
                 "count": cid['count']
             })
 
+    def safe_cid_label(item):
+        cid = item.get('CID_PRINCIPAL', '')
+        desc = item.get('DESCRICAO_CID', '')
+        if not desc:
+            return cid
+        return f"{cid} - {desc[:20]}"
+    
     chart_data = {
         'duracao_patterns': {
             'labels': ['Horas', '1-3 dias', '4-7 dias', '8-14 dias', '15+ dias'],
@@ -231,8 +221,8 @@ def absenteismo(request):
             'data': [0, 0, 0, 0, 0, 0, 0]
         },
         'impacto_por_cid': {
-            'labels': [item['GRUPO_PATOLOGICO'] for item in impacto_por_cid] if impacto_por_cid else [],
-            'data': [float(item['impacto']) for item in impacto_por_cid] if impacto_por_cid else []
+            'labels': [item['GRUPO_PATOLOGICO'] for item in impacto_por_cid],
+            'data': [float(item['impacto']) for item in impacto_por_cid]
         },
         'absenteismo_por_setor': {
             'labels': [item['SETOR'] for item in absenteismo_por_setor],
@@ -240,7 +230,7 @@ def absenteismo(request):
             'data_dias': [item['dias'] for item in absenteismo_por_setor]
         },
         'absenteismo_por_cid': {
-            'labels': [f"{item['CID_PRINCIPAL']} - {item['DESCRICAO_CID'][:20]}" for item in absenteismo_por_cid],
+            'labels': [safe_cid_label(item) for item in absenteismo_por_cid],
             'data_count': [item['count'] for item in absenteismo_por_cid],
             'data_dias': [item['dias'] for item in absenteismo_por_cid]
         },
@@ -255,8 +245,8 @@ def absenteismo(request):
             'dias': [0, 0, 0]
         },
         'custo_por_setor': {
-            'labels': [item['SETOR'] for item in custo_por_setor] if custo_por_setor else [],
-            'data': [float(item['custo']) for item in custo_por_setor] if custo_por_setor else []
+            'labels': [item['SETOR'] for item in custo_por_setor],
+            'data': [float(item['custo']) for item in custo_por_setor]
         },
         'age_cid_correlation': {
             'data': age_cid_correlation
@@ -276,13 +266,13 @@ def absenteismo(request):
         chart_data['evolucao_mensal']['data_dias'].append(item['dias'])
 
     for item in genero_analysis:
-        if item['SEXO'] == 1:  # Masculino
+        if item['SEXO'] == 1:
             chart_data['genero']['count'][0] = item['count']
             chart_data['genero']['dias'][0] = item['dias']
-        elif item['SEXO'] == 2:  # Feminino
+        elif item['SEXO'] == 2:
             chart_data['genero']['count'][1] = item['count']
             chart_data['genero']['dias'][1] = item['dias']
-        else:  # Não informado
+        else:
             chart_data['genero']['count'][2] = item['count']
             chart_data['genero']['dias'][2] = item['dias']
 

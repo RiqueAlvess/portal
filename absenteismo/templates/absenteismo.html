@@ -6,6 +6,13 @@
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-hexbin@0.2"></script>
 <style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #00325A;
+    min-height: 100vh;
+  }
+  
   .hexbin-tooltip {
     position: absolute;
     background: rgba(0, 50, 90, 0.9);
@@ -91,7 +98,6 @@
     margin-top: 5px;
   }
 
-  /* Estilo para placeholder de gráficos vazios */
   .chart-placeholder {
     height: 100%;
     display: flex;
@@ -108,7 +114,7 @@
 {% endblock %}
 
 {% block body %}
-<div class="px-10 py-12 bg-[#00325A] min-h-screen">
+<div class="px-10 py-12 bg-[#00325A] min-h-screen w-full">
   <div class="max-w-7xl mx-auto">
     <h1 class="text-2xl font-bold text-white mb-8">Absenteísmo - {{ empresa_ativa.RAZAOSOCIAL }}</h1>
 
@@ -533,9 +539,8 @@
     options: chartOptions
   });
   
-  // Impacto Financeiro por Patologia - with empty state handling
   const impactChartContainer = document.getElementById('impactChartContainer');
-  if (chartData.impacto_por_cid.labels.length > 0) {
+  if (chartData.impacto_por_cid.labels && chartData.impacto_por_cid.labels.length > 0) {
     const impactCtx = document.getElementById('impactChart').getContext('2d');
     new Chart(impactCtx, {
       type: 'bar',
@@ -775,9 +780,8 @@
     }
   });
   
-  // Análise de Custos do Absenteísmo - with empty state handling
   const costChartContainer = document.getElementById('costChartContainer');
-  if (chartData.custo_por_setor.labels.length > 0) {
+  if (chartData.custo_por_setor.labels && chartData.custo_por_setor.labels.length > 0) {
     const costCtx = document.getElementById('costChart').getContext('2d');
     new Chart(costCtx, {
       type: 'bar',
@@ -850,7 +854,6 @@
       .range([0, innerHeight])
       .padding(0.1);
     
-    // Changed to Blues color scale for better clarity
     const colorScale = d3.scaleSequential()
       .domain([0, maxCount])
       .interpolator(d3.interpolateBlues);
@@ -994,7 +997,6 @@
       .attr('font-size', '10px')
       .text('Frequência de Ocorrências');
       
-    // Add low/high text indicators
     legend.append('text')
       .attr('x', legendWidth / 2)
       .attr('y', legendHeight + 15)
