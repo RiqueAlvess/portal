@@ -12,63 +12,68 @@
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow card-hover">
         <h3 class="text-sm text-white/70 mb-1">Em Férias</h3>
-        <p class="text-2xl font-semibold text-white">{{ total_ferias }}
-          <span class="text-[#0072BC] text-base">({{ perc_ferias }}%)</span>
-        </p>
+        <p class="text-2xl font-semibold text-white">{{ total_ferias }} <span class="text-[#0072BC] text-base">({{ perc_ferias }}%)</span></p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow card-hover">
         <h3 class="text-sm text-white/70 mb-1">Afastados</h3>
-        <p class="text-2xl font-semibold text-white">{{ total_afastados }}
-          <span class="text-[#0072BC] text-base">({{ perc_afastados }}%)</span>
-        </p>
+        <p class="text-2xl font-semibold text-white">{{ total_afastados }} <span class="text-[#0072BC] text-base">({{ perc_afastados }}%)</span></p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow card-hover">
         <h3 class="text-sm text-white/70 mb-1">Sem Matrícula</h3>
-        <p class="text-2xl font-semibold text-white">{{ total_sem_matricula }}
-          <span class="text-[#E30613] text-base">({{ perc_sem_matricula }}%)</span>
-        </p>
+        <p class="text-2xl font-semibold text-white">{{ total_sem_matricula }} <span class="text-[#E30613] text-base">({{ perc_sem_matricula }}%)</span></p>
       </div>
     </div>
 
     <div class="bg-white/5 border border-white/10 rounded-2xl shadow-xl overflow-hidden">
       <div class="p-6">
-        <div class="flex space-x-4 border-b border-white/10 mb-4">
-          <button class="tab-button text-white py-2 px-4 text-sm font-semibold border-b-2 border-transparent hover:border-white active-tab" onclick="showTab('tab1')">Sem Matrícula</button>
-          <button class="tab-button text-white py-2 px-4 text-sm font-semibold border-b-2 border-transparent hover:border-white" onclick="showTab('tab2')">Hiperatestadistas</button>
-          <button class="tab-button text-white py-2 px-4 text-sm font-semibold border-b-2 border-transparent hover:border-white" onclick="showTab('tab3')">Atestados na Experiência</button>
+
+    <div class="flex space-x-4 border-b border-white/10 mb-4">
+      <a href="?tab=sem_matricula" class="tab-button text-white py-2 px-4 text-sm font-semibold border-b-2 {% if tab_ativa == 'sem_matricula' %}border-white{% else %}border-transparent{% endif %}">Sem Matrícula</a>
+      <a href="?tab=hiperatestadistas&periodo={{ filtro_periodo }}" class="tab-button text-white py-2 px-4 text-sm font-semibold border-b-2 {% if tab_ativa == 'hiperatestadistas' %}border-white{% else %}border-transparent{% endif %}">Hiperatestadistas</a>
+      <a href="?tab=experiencia" class="tab-button text-white py-2 px-4 text-sm font-semibold border-b-2 {% if tab_ativa == 'experiencia' %}border-white{% else %}border-transparent{% endif %}">Na Experiência</a>
+    </div>
+
+
+        <div class="{% if tab_ativa != 'sem_matricula' %}hidden{% endif %}">
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+              <thead class="bg-[#002844]">
+                <tr>
+                  <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Nome</th>
+                  <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">CPF</th>
+                  <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Setor</th>
+                  <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Situação</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/10">
+                {% for f in colaboradores_sem_matricula %}
+                <tr class="hover:bg-white/5 transition-colors">
+                  <td class="flex items-center gap-2 px-6 py-4 text-white/90">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/60">
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    {{ f.NOME }}
+                  </td>
+                  <td class="px-6 py-4 text-white/90">{{ f.CPF }}</td>
+                  <td class="px-6 py-4 text-white/90">{{ f.NOMESETOR }}</td>
+                  <td class="px-6 py-4">
+                    <span class="bg-[#E30613]/90 text-white px-3 py-1 rounded-full text-xs font-bold">{{ f.SITUACAO }}</span>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4" class="text-center py-6 text-white/70">Nenhum colaborador encontrado.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div id="tab1" class="tab-content block">
-          <table class="w-full border-collapse">
-            <thead class="bg-[#002844]">
-              <tr>
-                <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Nome</th>
-                <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">CPF</th>
-                <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Setor</th>
-                <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Situação</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/10">
-              {% for f in colaboradores_sem_matricula %}
-              <tr class="hover:bg-white/5 transition-colors">
-                <td class="flex items-center gap-2 px-6 py-4 text-white/90">{{ f.NOME }}</td>
-                <td class="px-6 py-4 text-white/90">{{ f.CPF }}</td>
-                <td class="px-6 py-4 text-white/90">{{ f.NOMESETOR }}</td>
-                <td class="px-6 py-4">
-                  <span class="bg-[#E30613]/90 text-white px-3 py-1 rounded-full text-xs font-bold">{{ f.SITUACAO }}</span>
-                </td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="4" class="text-center py-6 text-white/70">Nenhum colaborador encontrado.</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-
-        <div id="tab2" class="tab-content hidden">
+        <div class="{% if tab_ativa != 'hiperatestadistas' %}hidden{% endif %}">
           <form method="get" class="flex items-center gap-3 mb-4">
+            <input type="hidden" name="tab" value="hiperatestadistas">
             <label for="periodo" class="text-white/70 text-sm">Período:</label>
             <select id="periodo" name="periodo" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
               <option value="semestre" {% if filtro_periodo == "semestre" %}selected{% endif %}>Últimos 6 meses</option>
@@ -76,73 +81,65 @@
               <option value="mes" {% if filtro_periodo == "mes" %}selected{% endif %}>Últimos 30 dias</option>
             </select>
           </form>
-          <table class="w-full border-collapse">
-            <thead class="bg-[#002844] text-white/60">
-              <tr>
-                <th class="text-left px-6 py-4 text-sm tracking-wider">Nome</th>
-                <th class="text-left px-6 py-4 text-sm tracking-wider">Matrícula</th>
-                <th class="text-left px-6 py-4 text-sm tracking-wider">Atestados</th>
-                <th class="text-left px-6 py-4 text-sm tracking-wider">Dias Afastado</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/10">
-              {% for h in hiperatestadistas %}
-              <tr class="hover:bg-white/5 transition">
-                <td class="px-6 py-4 text-white/90">{{ h.NOME_FUNCIONARIO }}</td>
-                <td class="px-6 py-4 text-white/90">{{ h.MATRICULA_FUNC }}</td>
-                <td class="px-6 py-4 text-white/90">{{ h.total_atestados }}</td>
-                <td class="px-6 py-4 text-white/90">{{ h.total_dias }}</td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="4" class="text-center py-6 text-white/70">Nenhum registro encontrado.</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+              <thead class="bg-[#002844] text-white/60">
+                <tr>
+                  <th class="text-left px-6 py-4 text-sm tracking-wider">Nome</th>
+                  <th class="text-left px-6 py-4 text-sm tracking-wider">Matrícula</th>
+                  <th class="text-left px-6 py-4 text-sm tracking-wider">Atestados</th>
+                  <th class="text-left px-6 py-4 text-sm tracking-wider">Dias Afastado</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/10">
+                {% for h in hiperatestadistas %}
+                <tr class="hover:bg-white/5 transition">
+                  <td class="px-6 py-4 text-white/90">{{ h.NOME_FUNCIONARIO }}</td>
+                  <td class="px-6 py-4 text-white/90">{{ h.MATRICULA_FUNC }}</td>
+                  <td class="px-6 py-4 text-white/90">{{ h.total_atestados }}</td>
+                  <td class="px-6 py-4 text-white/90">{{ h.total_dias }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4" class="text-center py-6 text-white/70">Nenhum registro encontrado.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div id="tab3" class="tab-content hidden">
-          <table class="w-full border-collapse">
-            <thead class="bg-[#002844] text-white/60">
-              <tr>
-                <th class="text-left px-6 py-4 text-sm tracking-wider">Nome</th>
-                <th class="text-left px-6 py-4 text-sm tracking-wider">CPF</th>
-                <th class="text-left px-6 py-4 text-sm tracking-wider">Atestados</th>
-                <th class="text-left px-6 py-4 text-sm tracking-wider">Dias Afastado</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/10">
-              {% for a in atestados_experiencia %}
-              <tr class="hover:bg-white/5 transition">
-                <td class="px-6 py-4 text-white/90">{{ a.NOME_FUNCIONARIO }}</td>
-                <td class="px-6 py-4 text-white/90">{{ a.funcionario__CPF }}</td>
-                <td class="px-6 py-4 text-white/90">{{ a.total_atestados }}</td>
-                <td class="px-6 py-4 text-white/90">{{ a.total_dias }}</td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="4" class="text-center py-6 text-white/70">Nenhum registro encontrado.</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="{% if tab_ativa != 'experiencia' %}hidden{% endif %}">
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+              <thead class="bg-[#002844] text-white/60">
+                <tr>
+                  <th class="text-left px-6 py-4 text-sm tracking-wider">Nome</th>
+                  <th class="text-left px-6 py-4 text-sm tracking-wider">CPF</th>
+                  <th class="text-left px-6 py-4 text-sm tracking-wider">Atestados</th>
+                  <th class="text-left px-6 py-4 text-sm tracking-wider">Dias Afastado</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/10">
+                {% for a in atestados_experiencia %}
+                <tr class="hover:bg-white/5 transition">
+                  <td class="px-6 py-4 text-white/90">{{ a.NOME_FUNCIONARIO }}</td>
+                  <td class="px-6 py-4 text-white/90">{{ a.funcionario__CPF }}</td>
+                  <td class="px-6 py-4 text-white/90">{{ a.total_atestados }}</td>
+                  <td class="px-6 py-4 text-white/90">{{ a.total_dias }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4" class="text-center py-6 text-white/70">Nenhum registro encontrado.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
+
       </div>
     </div>
   </div>
 </div>
-
-<script>
-  function showTab(id) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active-tab'));
-    document.getElementById(id).classList.remove('hidden');
-    event.target.classList.add('active-tab');
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.tab-button').classList.add('active-tab');
-  });
-</script>
 {% endblock %}

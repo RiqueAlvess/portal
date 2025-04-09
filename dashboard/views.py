@@ -55,7 +55,7 @@ def dashboard(request):
 
     hoje = date.today()
     experiencia_limite = hoje - timedelta(days=90)
-
+    
     abs_experiencia = Absenteismo.objects.filter(
         empresa=empresa_ativa,
         funcionario__isnull=False,
@@ -74,20 +74,24 @@ def dashboard(request):
         .order_by('-total_atestados')
     )
 
+    tab_ativa = request.GET.get('tab', 'sem_matricula')
+    filtro_periodo = request.GET.get('periodo', 'semestre')
+
     return render(request, "dashboard.html", {
-        "empresa_ativa": empresa_ativa,
-        "total_funcionarios": total_funcionarios,
-        "total_ferias": total_ferias,
-        "perc_ferias": perc_ferias,
-        "total_afastados": total_afastados,
-        "perc_afastados": perc_afastados,
-        "total_sem_matricula": sem_matricula.count(),
-        "perc_sem_matricula": perc_sem_matricula,
-        "colaboradores_sem_matricula": sem_matricula,
-        "hiperatestadistas": hiperatestadistas,
-        "atestados_experiencia": atestados_experiencia,
-        "filtro_periodo": filtro_periodo,
-    })
+                "empresa_ativa": empresa_ativa,
+                "total_funcionarios": total_funcionarios,
+                "total_ferias": total_ferias,
+                "perc_ferias": perc_ferias,
+                "total_afastados": total_afastados,
+                "perc_afastados": perc_afastados,
+                "total_sem_matricula": sem_matricula.count(),
+                "perc_sem_matricula": perc_sem_matricula,
+                "colaboradores_sem_matricula": sem_matricula,
+                "hiperatestadistas": hiperatestadistas,
+                "atestados_experiencia": atestados_experiencia,
+                "tab_ativa": tab_ativa,
+                "filtro_periodo": filtro_periodo,
+            })
 
 
 
