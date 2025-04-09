@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="px-10 py-12 bg-[#00325A] min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-2xl font-bold text-white mb-8">Absenteísmo - {{ empresa_ativa.RAZAOSOCIAL }}</h1>
+
+    <form method="get" class="flex flex-wrap gap-4 mb-10 items-end">
+      <div>
+        <label class="text-white/70 text-sm">Período</label>
+        <select name="periodo" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
+          <option value="semestre" {% if periodo == 'semestre' %}selected{% endif %}>Últimos 6 meses</option>
+          <option value="trimestre" {% if periodo == 'trimestre' %}selected{% endif %}>Últimos 3 meses</option>
+          <option value="mes" {% if periodo == 'mes' %}selected{% endif %}>Últimos 30 dias</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-white/70 text-sm">Grupo</label>
+        <select name="grupo" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
+          <option value="">Todos</option>
+          <option value="F" {% if grupo == 'F' %}selected{% endif %}>F</option>
+          <option value="M" {% if grupo == 'M' %}selected{% endif %}>M</option>
+          <option value="S" {% if grupo == 'S' %}selected{% endif %}>S</option>
+          <option value="T" {% if grupo == 'T' %}selected{% endif %}>T</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-white/70 text-sm">Unidade</label>
+        <select name="unidade" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
+          <option value="">Todas</option>
+          {% for u in unidades %}
+          <option value="{{ u }}" {% if unidade == u %}selected{% endif %}>{{ u }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="text-white/70 text-sm">Setor</label>
+        <select name="setor" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
+          <option value="">Todos</option>
+          {% for s in setores %}
+          <option value="{{ s }}" {% if setor == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </form>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+        <h3 class="text-sm text-white/70 mb-1">Bradford Crítico</h3>
+        <p class="text-3xl font-bold text-white">{{ bradford_critico_count }}</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+        <h3 class="text-sm text-white/70 mb-1">Impacto Financeiro</h3>
+        <p class="text-3xl font-bold text-white">R$ {{ impacto_financeiro|floatformat:2 }}</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+        <h3 class="text-sm text-white/70 mb-1">Taxa de Reincidência</h3>
+        <p class="text-3xl font-bold text-white">{{ taxa_reincidencia|floatformat:1 }}%</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+        <h3 class="text-sm text-white/70 mb-1">Taxa de Absenteísmo</h3>
+        <p class="text-3xl font-bold text-white">{{ taxa_absenteismo|floatformat:2 }}%</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+        <h3 class="text-sm text-white/70 mb-1">Total de Funcionários</h3>
+        <p class="text-2xl font-bold text-white">{{ total_funcionarios }}</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+        <h3 class="text-sm text-white/70 mb-1">Total de Atestados</h3>
+        <p class="text-2xl font-bold text-white">{{ total_atestados }}</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+        <h3 class="text-sm text-white/70 mb-1">Média de Dias por Atestado</h3>
+        <p class="text-2xl font-bold text-white">{{ media_dias|floatformat:1 }}</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+        <h3 class="text-sm text-white/70 mb-1">Média de Atestados</h3>
+        <p class="text-2xl font-bold text-white">{{ media_atestados|floatformat:2 }}</p>
+      </div>
+    </div>
+
+    <div class="bg-white/5 border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+      <div class="p-6">
+        <h2 class="text-xl text-white font-semibold mb-4">Bradford Factor</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead class="bg-[#002844]">
+            <tr>
+              <th class="text-left px-6 py-4 text-white/60 text-sm">Matrícula</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm">Nome</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm">Episódios</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm">Dias</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm">Bradford</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm">Risco</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/10">
+            {% for b in bradford_detalhado %}
+            <tr class="hover:bg-white/5 transition">
+              <td class="px-6 py-4 text-white/90">{{ b.MATRICULA_FUNC }}</td>
+              <td class="px-6 py-4 text-white/90">{{ b.NOME_FUNCIONARIO }}</td>
+              <td class="px-6 py-4 text-white/90">{{ b.episodios }}</td>
+              <td class="px-6 py-4 text-white/90">{{ b.total_dias }}</td>
+              <td class="px-6 py-4 text-white/90">{{ b.bradford }}</td>
+              <td class="px-6 py-4 text-white/90">
+                <span class="{% if b.risco == 'ALTO' %}text-red-400{% elif b.risco == 'MÉDIO' %}text-yellow-400{% else %}text-green-400{% endif %} font-bold uppercase">
+                  {{ b.risco }}
+                </span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-6 text-white/70">Nenhum registro encontrado.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

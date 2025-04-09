@@ -1,7 +1,6 @@
 {% load static %}
 
-<nav class="bg-[#00325A] border-b border-white/10 px-6 py-4 flex items-center justify-between lg:px-10">
-  
+<nav class="bg-[#00325A] border-b border-white/10 px-6 py-4 flex items-center justify-between lg:px-10 relative">
   <div class="flex items-center">
     <a href="{% url 'dashboard' %}" class="-m-1.5 p-1.5">
       <span class="sr-only">PortalGRS</span>
@@ -9,53 +8,65 @@
     </a>
   </div>
 
-  <div class="flex lg:hidden">
-    <button type="button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-white hover:text-[#0072BC] focus:outline-none">
-      <span class="sr-only">Abrir menu principal</span>
-      <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-      </svg>
-    </button>
-  </div>
+  <div class="hidden lg:flex lg:gap-x-12 lg:ml-12 items-center">
+    <a href="{% url 'dashboard' %}" class="text-sm font-semibold text-white hover:text-[#0072BC]">Overview</a>
 
-  <div class="hidden lg:flex lg:gap-x-12 lg:ml-12">
-    <a href="{% url 'dashboard' %}" class="text-sm font-semibold text-white hover:text-[#0072BC]">
-      Overview
-    </a>
+    <a href="{% url 'funcionarios' %}" class="text-sm font-semibold text-white hover:text-[#0072BC]">Funcionários</a>
 
-    <a href="{% url 'funcionarios' %}" class="text-sm font-semibold text-white hover:text-[#0072BC]">
-      Funcionários
-    </a>
-
-
+    <div class="relative">
+      <button id="gestao-button" type="button"
+        class="text-sm font-semibold text-white hover:text-[#0072BC] flex items-center gap-1 focus:outline-none">
+        Gestão
+        <svg class="w-4 h-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      <div id="gestao-menu"
+        class="absolute left-0 z-50 mt-2 w-40 bg-white rounded-md shadow-lg hidden border border-white/10">
+        <a href="{% url 'absenteismo' %}" class="block px-4 py-2 text-sm text-[#00325A] hover:bg-gray-100">Absenteísmo</a>
+      </div>
+    </div>
   </div>
 
   <div class="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-6">
-    
     <form method="POST" action="{% url 'trocar_empresa' %}" class="flex items-center gap-2">
       {% csrf_token %}
       <label for="empresa-select" class="text-sm text-white/80">Selecionar empresa:</label>
       <select id="empresa-select" name="empresa_id" onchange="this.form.submit()"
-              class="bg-white/5 text-white text-sm rounded-md px-3 py-1.5 outline-none focus:ring-2 focus:ring-[#0072BC]">
+        class="bg-white/5 text-white text-sm rounded-md px-3 py-1.5 outline-none focus:ring-2 focus:ring-[#0072BC]">
         {% for empresa in request.user.usuarioempresa_set.all %}
-          <option value="{{ empresa.empresa.id }}" {% if empresa.empresa.id == empresa_ativa.id %}selected{% endif %}>
-            {{ empresa.empresa.RAZAOSOCIAL }}
-          </option>
+        <option value="{{ empresa.empresa.id }}" {% if empresa.empresa.id == empresa_ativa.id %}selected{% endif %}>
+          {{ empresa.empresa.RAZAOSOCIAL }}
+        </option>
         {% endfor %}
       </select>
     </form>
 
     <form method="POST" action="{% url 'logout' %}">
       {% csrf_token %}
-      <button type="submit" class="flex items-center gap-2 text-white hover:text-[#E30613] text-sm font-medium transition">
+      <button type="submit"
+        class="flex items-center gap-2 text-white hover:text-[#E30613] text-sm font-medium transition">
         <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 12h-9" />
+            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 12h-9" />
         </svg>
         <span class="hidden sm:inline">Sair</span>
       </button>
     </form>
-
   </div>
 </nav>
+
+<script>
+  const button = document.getElementById('gestao-button');
+  const menu = document.getElementById('gestao-menu');
+
+  button.addEventListener('click', () => {
+    menu.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!button.contains(e.target) && !menu.contains(e.target)) {
+      menu.classList.add('hidden');
+    }
+  });
+</script>
