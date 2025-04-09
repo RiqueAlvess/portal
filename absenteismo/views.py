@@ -118,6 +118,8 @@ def absenteismo(request):
         dias=Coalesce(Sum('DIAS_AFASTADOS'), 0),
         horas=Count('id', filter=Q(TIPO_ATESTADO=1)) * 4,  # Estimated 4 hours per hour attestation
         impacto=((F('dias') * 8) + F('horas')) * VALOR_HORA
+    ).filter(
+        impacto__gt=0  # Only include entries with impact greater than 0
     ).order_by('-impacto')[:10]
 
     absenteismo_por_setor = atestados.values('SETOR').annotate(
@@ -164,6 +166,8 @@ def absenteismo(request):
         dias=Coalesce(Sum('DIAS_AFASTADOS'), 0),
         horas=Count('id', filter=Q(TIPO_ATESTADO=1)) * 4,
         custo=((F('dias') * 8) + F('horas')) * VALOR_HORA
+    ).filter(
+        custo__gt=0  # Only include entries with cost greater than 0
     ).order_by('-custo')[:10]
 
     cids_por_prefixo_setor = {}
@@ -227,8 +231,8 @@ def absenteismo(request):
             'data': [0, 0, 0, 0, 0, 0, 0]
         },
         'impacto_por_cid': {
-            'labels': [item['GRUPO_PATOLOGICO'] for item in impacto_por_cid],
-            'data': [float(item['impacto']) for item in impacto_por_cid]
+            'labels': [item['GRUPO_PATOLOGICO'] for item in impacto_por_cid] if impacto_por_cid else [],
+            'data': [float(item['impacto']) for item in impacto_por_cid] if impacto_por_cid else []
         },
         'absenteismo_por_setor': {
             'labels': [item['SETOR'] for item in absenteismo_por_setor],
@@ -251,8 +255,8 @@ def absenteismo(request):
             'dias': [0, 0, 0]
         },
         'custo_por_setor': {
-            'labels': [item['SETOR'] for item in custo_por_setor],
-            'data': [float(item['custo']) for item in custo_por_setor]
+            'labels': [item['SETOR'] for item in custo_por_setor] if custo_por_setor else [],
+            'data': [float(item['custo']) for item in custo_por_setor] if custo_por_setor else []
         },
         'age_cid_correlation': {
             'data': age_cid_correlation
