@@ -60,6 +60,50 @@
     visibility: visible;
     opacity: 1;
   }
+
+  .color-scale-legend {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .color-scale {
+    height: 10px;
+    width: 200px;
+    background: linear-gradient(to right, #f7fbff, #08306b);
+    border-radius: 2px;
+  }
+
+  .color-labels {
+    display: flex;
+    width: 200px;
+    justify-content: space-between;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .hexbin-legend {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    margin-top: 5px;
+  }
+
+  /* Estilo para placeholder de gráficos vazios */
+  .chart-placeholder {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    padding: 20px;
+  }
 </style>
 {% endblock %}
 
@@ -199,7 +243,7 @@
           Impacto Financeiro por Patologia
           <span class="info-icon" data-tooltip="Custo estimado por grupo patológico, calculado multiplicando o valor hora (R$ 8,02) pelo total de horas perdidas. Identifica quais condições médicas geram maior impacto financeiro, ajudando a priorizar ações preventivas e programas de saúde ocupacional.">i</span>
         </h3>
-        <div class="h-64">
+        <div class="h-64" id="impactChartContainer">
           <canvas id="impactChart"></canvas>
         </div>
       </div>
@@ -264,7 +308,7 @@
           Análise de Custos do Absenteísmo
           <span class="info-icon" data-tooltip="Impacto financeiro por setor, baseado no valor hora de R$ 8,02 multiplicado pelo total de horas perdidas. Permite visualizar quais áreas representam maior custo devido ao absenteísmo, auxiliando na priorização de investimentos em saúde ocupacional.">i</span>
         </h3>
-        <div class="h-64">
+        <div class="h-64" id="costChartContainer">
           <canvas id="costChart"></canvas>
         </div>
       </div>
@@ -277,6 +321,9 @@
       </h3>
       <div class="h-80">
         <div id="hexbinChart" class="w-full h-full"></div>
+      </div>
+      <div class="hexbin-legend mt-2">
+        Intensidade da cor indica frequência de ocorrência: <span class="text-blue-200">azul claro</span> = baixa frequência, <span class="text-blue-900">azul escuro</span> = alta frequência
       </div>
     </div>
 
@@ -486,23 +533,47 @@
     options: chartOptions
   });
   
-  const impactCtx = document.getElementById('impactChart').getContext('2d');
-  new Chart(impactCtx, {
-    type: 'bar',
-    data: {
-      labels: chartData.impacto_por_cid.labels,
-      datasets: [{
-        label: 'R$',
-        data: chartData.impacto_por_cid.data,
-        backgroundColor: colors.green,
-        borderWidth: 0
-      }]
-    },
-    options: {
-      ...chartOptions,
-      indexAxis: 'y'
-    }
-  });
+  // Impacto Financeiro por Patologia - with empty state handling
+  const impactChartContainer = document.getElementById('impactChartContainer');
+  if (chartData.impacto_por_cid.labels.length > 0) {
+    const impactCtx = document.getElementById('impactChart').getContext('2d');
+    new Chart(impactCtx, {
+      type: 'bar',
+      data: {
+        labels: chartData.impacto_por_cid.labels,
+        datasets: [{
+          label: 'R$',
+          data: chartData.impacto_por_cid.data,
+          backgroundColor: colors.green,
+          borderWidth: 0
+        }]
+      },
+      options: {
+        ...chartOptions,
+        indexAxis: 'y',
+        plugins: {
+          ...chartOptions.plugins,
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.parsed.x !== null) {
+                  label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+                    .format(context.parsed.x);
+                }
+                return label;
+              }
+            }
+          }
+        }
+      }
+    });
+  } else {
+    impactChartContainer.innerHTML = '<div class="chart-placeholder">Sem dados suficientes para gerar este gráfico</div>';
+  }
   
   const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
   new Chart(evolutionCtx, {
@@ -704,41 +775,47 @@
     }
   });
   
-  const costCtx = document.getElementById('costChart').getContext('2d');
-  new Chart(costCtx, {
-    type: 'bar',
-    data: {
-      labels: chartData.custo_por_setor.labels,
-      datasets: [{
-        label: 'R$',
-        data: chartData.custo_por_setor.data,
-        backgroundColor: colors.red,
-        borderWidth: 0
-      }]
-    },
-    options: {
-      ...chartOptions,
-      indexAxis: 'y',
-      plugins: {
-        ...chartOptions.plugins,
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              let label = context.dataset.label || '';
-              if (label) {
-                label += ': ';
+  // Análise de Custos do Absenteísmo - with empty state handling
+  const costChartContainer = document.getElementById('costChartContainer');
+  if (chartData.custo_por_setor.labels.length > 0) {
+    const costCtx = document.getElementById('costChart').getContext('2d');
+    new Chart(costCtx, {
+      type: 'bar',
+      data: {
+        labels: chartData.custo_por_setor.labels,
+        datasets: [{
+          label: 'R$',
+          data: chartData.custo_por_setor.data,
+          backgroundColor: colors.red,
+          borderWidth: 0
+        }]
+      },
+      options: {
+        ...chartOptions,
+        indexAxis: 'y',
+        plugins: {
+          ...chartOptions.plugins,
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.parsed.x !== null) {
+                  label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+                    .format(context.parsed.x);
+                }
+                return label;
               }
-              if (context.parsed.x !== null) {
-                label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
-                  .format(context.parsed.x);
-              }
-              return label;
             }
           }
         }
       }
-    }
-  });
+    });
+  } else {
+    costChartContainer.innerHTML = '<div class="chart-placeholder">Sem dados suficientes para gerar este gráfico</div>';
+  }
   
   function createHexbinChart() {
     const ageCidData = chartData.age_cid_correlation.data;
@@ -773,9 +850,10 @@
       .range([0, innerHeight])
       .padding(0.1);
     
+    // Changed to Blues color scale for better clarity
     const colorScale = d3.scaleSequential()
       .domain([0, maxCount])
-      .interpolator(d3.interpolateInferno);
+      .interpolator(d3.interpolateBlues);
     
     const svg = d3.select('#hexbinChart')
       .append('svg')
@@ -852,8 +930,9 @@
         .style('opacity', 0.9);
       tooltip.html(`
         <div><strong>Faixa Etária:</strong> ${d.age_range}</div>
-        <div><strong>CID:</strong> ${d.cid}</div>
-        <div><strong>Quantidade:</strong> ${d.count}</div>
+        <div><strong>Grupo Patológico:</strong> ${d.cid}</div>
+        <div><strong>Frequência:</strong> ${d.count} ocorrências</div>
+        <div><em>Quanto mais escuro o azul, maior a frequência</em></div>
       `)
         .style('left', (event.pageX + 10) + 'px')
         .style('top', (event.pageY - 28) + 'px');
@@ -869,7 +948,7 @@
     
     const legendScale = d3.scaleSequential()
       .domain([0, maxCount])
-      .interpolator(d3.interpolateInferno);
+      .interpolator(d3.interpolateBlues);
     
     const defs = svg.append('defs');
     
@@ -913,7 +992,24 @@
       .attr('text-anchor', 'middle')
       .attr('fill', 'rgba(255, 255, 255, 0.7)')
       .attr('font-size', '10px')
-      .text('Quantidade');
+      .text('Frequência de Ocorrências');
+      
+    // Add low/high text indicators
+    legend.append('text')
+      .attr('x', legendWidth / 2)
+      .attr('y', legendHeight + 15)
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'rgba(255, 255, 255, 0.7)')
+      .attr('font-size', '8px')
+      .text('Baixa');
+      
+    legend.append('text')
+      .attr('x', legendWidth / 2)
+      .attr('y', -5)
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'rgba(255, 255, 255, 0.7)')
+      .attr('font-size', '8px')
+      .text('Alta');
   }
   
   function setupTooltips() {
