@@ -2,9 +2,7 @@
 {% load static %}
 
 {% block head %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-<script src="https://cdn.jsdelivr.net/npm/d3-hexbin@0.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <style>
 html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh; }
 .hexbin-tooltip { position: absolute; background: rgba(0, 50, 90, 0.9); color: white; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 4px; padding: 8px; font-size: 12px; pointer-events: none; z-index: 100; max-width: 200px; }
@@ -12,10 +10,6 @@ html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh
 .info-icon:hover { background-color: rgba(255, 255, 255, 0.3); }
 .tooltip { position: absolute; visibility: hidden; max-width: 250px; background-color: rgba(0, 25, 50, 0.95); color: white; border-radius: 6px; padding: 10px; font-size: 12px; line-height: 1.4; z-index: 100; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); transition: opacity 0.2s; opacity: 0; }
 .tooltip.visible { visibility: visible; opacity: 1; }
-.color-scale-legend { margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.color-scale { height: 10px; width: 200px; background: linear-gradient(to right, #f7fbff, #08306b); border-radius: 2px; }
-.color-labels { display: flex; width: 200px; justify-content: space-between; font-size: 10px; color: rgba(255, 255, 255, 0.7); }
-.hexbin-legend { font-size: 11px; color: rgba(255, 255, 255, 0.7); text-align: center; margin-top: 5px; }
 .chart-placeholder { height: 100%; display: flex; align-items: center; justify-content: center; background-color: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px dashed rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5); font-size: 14px; padding: 20px; }
 </style>
 {% endblock %}
@@ -24,153 +18,139 @@ html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh
 <div class="px-10 py-12 bg-[#00325A] min-h-screen w-full">
   <div class="max-w-7xl mx-auto">
     <h1 class="text-2xl font-bold text-white mb-8">Absenteísmo - {{ empresa_ativa.RAZAOSOCIAL }}</h1>
-    <form method="get" class="flex flex-wrap gap-4 mb-10 items-end">
-      <div>
-        <label class="text-white/70 text-sm">Período</label>
-        <select name="periodo" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
-          <option value="semestre" {% if periodo == 'semestre' %}selected{% endif %}>Últimos 6 meses</option>
-          <option value="trimestre" {% if periodo == 'trimestre' %}selected{% endif %}>Últimos 3 meses</option>
-          <option value="mes" {% if periodo == 'mes' %}selected{% endif %}>Últimos 30 dias</option>
-        </select>
-      </div>
-      <div>
-        <label class="text-white/70 text-sm">Grupo</label>
-        <select name="grupo" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
-          <option value="">Todos</option>
-          <option value="F" {% if grupo == 'F' %}selected{% endif %}>F</option>
-          <option value="M" {% if grupo == 'M' %}selected{% endif %}>M</option>
-          <option value="S" {% if grupo == 'S' %}selected{% endif %}>S</option>
-          <option value="T" {% if grupo == 'T' %}selected{% endif %}>T</option>
-        </select>
-      </div>
-      <div>
-        <label class="text-white/70 text-sm">Duração</label>
-        <select name="tipo_duracao" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
-          <option value="">Todos</option>
-          <option value="horas" {% if tipo_duracao == 'horas' %}selected{% endif %}>Horas</option>
-          <option value="1-3" {% if tipo_duracao == '1-3' %}selected{% endif %}>1-3 dias</option>
-          <option value="4-7" {% if tipo_duracao == '4-7' %}selected{% endif %}>4-7 dias</option>
-          <option value="8-14" {% if tipo_duracao == '8-14' %}selected{% endif %}>8-14 dias</option>
-          <option value="15+" {% if tipo_duracao == '15+' %}selected{% endif %}>15+ dias</option>
-        </select>
-      </div>
-      <div>
-        <label class="text-white/70 text-sm">Setor</label>
-        <select name="setor" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
-          <option value="">Todos</option>
-          {% for s in setores %}
-          <option value="{{ s }}" {% if setor == s %}selected{% endif %}>{{ s }}</option>
-          {% endfor %}
-        </select>
-      </div>
-    </form>
+    <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-10">
+      <form method="get" class="flex flex-wrap gap-4 items-end">
+        <div>
+          <label class="text-white/70 text-sm">Período</label>
+          <select name="periodo" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
+            <option value="semestre" {% if periodo == 'semestre' %}selected{% endif %}>Últimos 6 meses</option>
+            <option value="trimestre" {% if periodo == 'trimestre' %}selected{% endif %}>Últimos 3 meses</option>
+            <option value="mes" {% if periodo == 'mes' %}selected{% endif %}>Últimos 30 dias</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-white/70 text-sm">Grupo</label>
+          <select name="grupo" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
+            <option value="">Todos</option>
+            <option value="F" {% if grupo == 'F' %}selected{% endif %}>F</option>
+            <option value="M" {% if grupo == 'M' %}selected{% endif %}>M</option>
+            <option value="S" {% if grupo == 'S' %}selected{% endif %}>S</option>
+            <option value="T" {% if grupo == 'T' %}selected{% endif %}>T</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-white/70 text-sm">Duração</label>
+          <select name="tipo_duracao" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
+            <option value="">Todos</option>
+            <option value="horas" {% if tipo_duracao == 'horas' %}selected{% endif %}>Horas</option>
+            <option value="1-3" {% if tipo_duracao == '1-3' %}selected{% endif %}>1-3 dias</option>
+            <option value="4-7" {% if tipo_duracao == '4-7' %}selected{% endif %}>4-7 dias</option>
+            <option value="8-14" {% if tipo_duracao == '8-14' %}selected{% endif %}>8-14 dias</option>
+            <option value="15+" {% if tipo_duracao == '15+' %}selected{% endif %}>15+ dias</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-white/70 text-sm">Setor</label>
+          <select name="setor" onchange="this.form.submit()" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
+            <option value="">Todos</option>
+            {% for s in setores %}
+            <option value="{{ s }}" {% if setor == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </form>
+    </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">Bradford Crítico <span class="info-icon" data-tooltip="Número de colaboradores com índice Bradford superior a 500.">i</span></h3>
+        <h3 class="text-sm text-white/70 mb-1">Bradford Crítico <span class="info-icon" data-tooltip="Indicador que mede o impacto disruptivo das ausências curtas e frequentes. Valores acima de 500 indicam padrões de absenteísmo altamente prejudiciais à operação, exigindo intervenção imediata da gestão.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ bradford_critico_count }}</p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">Impacto Financeiro <span class="info-icon" data-tooltip="Valor total das horas perdidas.">i</span></h3>
+        <h3 class="text-sm text-white/70 mb-1">Impacto Financeiro <span class="info-icon" data-tooltip="Representa o custo direto das horas perdidas devido aos afastamentos. Calculado com base no valor/hora médio da empresa, não inclui custos indiretos como perda de produtividade ou substituição de pessoal.">i</span></h3>
         <p class="text-3xl font-bold text-white">R$ {{ impacto_financeiro|floatformat:2 }}</p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">Taxa de Reincidência <span class="info-icon" data-tooltip="Percentual de colaboradores com 2+ atestados.">i</span></h3>
+        <h3 class="text-sm text-white/70 mb-1">Taxa de Reincidência <span class="info-icon" data-tooltip="Percentual de colaboradores que apresentaram 2 ou mais atestados no período analisado. Valores altos podem indicar problemas crônicos de saúde na equipe ou possíveis abusos do sistema de afastamento.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ taxa_reincidencia|floatformat:1 }}%</p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">Taxa de Absenteísmo <span class="info-icon" data-tooltip="Percentual de dias perdidos em relação aos dias úteis.">i</span></h3>
+        <h3 class="text-sm text-white/70 mb-1">Taxa de Absenteísmo <span class="info-icon" data-tooltip="Percentual de dias úteis perdidos em relação ao total de dias úteis no período. Valores acima de 3% são considerados preocupantes na maioria dos setores industriais, exigindo análise mais detalhada das causas.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ taxa_absenteismo|floatformat:2 }}%</p>
       </div>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">Total de Funcionários <span class="info-icon" data-tooltip="Número total de colaboradores ativos.">i</span></h3>
+        <h3 class="text-sm text-white/70 mb-1">Total de Funcionários <span class="info-icon" data-tooltip="Número total de colaboradores ativos no período analisado. Serve como base para os cálculos percentuais e de taxas de absenteísmo, permitindo a normalização dos dados para comparações justas.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ total_funcionarios }}</p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">Total de Atestados <span class="info-icon" data-tooltip="Número de episódios de afastamento.">i</span></h3>
+        <h3 class="text-sm text-white/70 mb-1">Total de Atestados <span class="info-icon" data-tooltip="Quantidade absoluta de episódios de afastamento registrados no período. Um mesmo funcionário pode ter múltiplos episódios, impactando significativamente a operação devido às interrupções frequentes.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ total_atestados }}</p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">Média de Dias por Atestado <span class="info-icon" data-tooltip="Média de dias perdidos por atestado.">i</span></h3>
+        <h3 class="text-sm text-white/70 mb-1">Média de Dias por Atestado <span class="info-icon" data-tooltip="Duração média de cada episódio de afastamento. Valores baixos com alta frequência podem indicar absenteísmo de curta duração, que costuma ser mais disruptivo que afastamentos longos e planejados.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ media_dias|floatformat:1 }}</p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">Média de Atestados <span class="info-icon" data-tooltip="Atestados por funcionário.">i</span></h3>
+        <h3 class="text-sm text-white/70 mb-1">Média de Atestados <span class="info-icon" data-tooltip="Número médio de atestados por funcionário no período. Este indicador ajuda a identificar se o absenteísmo está distribuído entre muitos colaboradores ou concentrado em poucos, orientando estratégias de intervenção.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ media_atestados|floatformat:2 }}</p>
       </div>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">Análise de Padrões por Duração <span class="info-icon" data-tooltip="Distribuição dos atestados por duração.">i</span></h3>
-        <div class="h-64">
-          <canvas id="durationChart"></canvas>
-        </div>
+        <h3 class="text-sm text-white/70 mb-4">Análise de Padrões por Duração <span class="info-icon" data-tooltip="Este gráfico revela a distribuição dos atestados por tempo de afastamento. Picos em categorias específicas podem indicar tendências a investigar: alta ocorrência de atestados de horas pode sugerir problemas pontuais como consultas médicas, enquanto concentração em 15+ dias pode indicar condições mais graves.">i</span></h3>
+        <div id="durationChart" class="h-64"></div>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">Distribuição por Dia da Semana <span class="info-icon" data-tooltip="Frequência dos afastamentos por dia da semana.">i</span></h3>
-        <div class="h-64">
-          <canvas id="weekdayChart"></canvas>
-        </div>
+        <h3 class="text-sm text-white/70 mb-4">Distribuição por Dia da Semana <span class="info-icon" data-tooltip="Analisa a frequência de atestados por dia da semana, ajudando a identificar padrões suspeitos. Picos em segundas e sextas-feiras, por exemplo, podem indicar possível abuso do sistema de afastamento para prolongar finais de semana, enquanto distribuição equilibrada sugere ocorrências naturais.">i</span></h3>
+        <div id="weekdayChart" class="h-64"></div>
       </div>
     </div>
 
     <div class="mb-10">
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">Evolução do Absenteísmo por Mês <span class="info-icon" data-tooltip="Tendência mensal de atestados e dias perdidos.">i</span></h3>
-        <div class="h-64">
-          <canvas id="evolutionChart"></canvas>
-        </div>
+        <h3 class="text-sm text-white/70 mb-4">Evolução do Absenteísmo por Mês <span class="info-icon" data-tooltip="Mostra a tendência de atestados e dias perdidos ao longo do tempo. Permite identificar padrões sazonais, como aumento de afastamentos em períodos específicos (inverno, fim de ano), ou avaliar o impacto de ações implementadas, como programas de saúde ocupacional ou mudanças na política de atestados.">i</span></h3>
+        <div id="evolutionChart" class="h-64"></div>
       </div>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">Absenteísmo por Setor (Top 10) <span class="info-icon" data-tooltip="Setores com mais dias perdidos e atestados.">i</span></h3>
-        <div class="h-64">
-          <canvas id="sectorChart"></canvas>
-        </div>
+        <h3 class="text-sm text-white/70 mb-4">Absenteísmo por Setor (Top 10) <span class="info-icon" data-tooltip="Identifica os setores mais afetados pelo absenteísmo, tanto em número de ocorrências quanto em dias perdidos. Setores com valores desproporcionalmente altos podem indicar problemas específicos como condições de trabalho inadequadas, liderança ineficaz ou riscos ocupacionais que precisam ser investigados.">i</span></h3>
+        <div id="sectorChart" class="h-64"></div>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">Absenteísmo por Causa (CID) <span class="info-icon" data-tooltip="Principais códigos CID e dias perdidos.">i</span></h3>
-        <div class="h-64">
-          <canvas id="cidChart"></canvas>
-        </div>
+        <h3 class="text-sm text-white/70 mb-4">Absenteísmo por Causa (CID) <span class="info-icon" data-tooltip="Apresenta as principais causas de afastamento conforme a Classificação Internacional de Doenças (CID). Permite direcionar programas de prevenção e saúde ocupacional para as condições mais prevalentes, além de identificar possíveis riscos ocupacionais específicos que estejam causando determinadas patologias.">i</span></h3>
+        <div id="cidChart" class="h-64"></div>
       </div>
     </div>
 
     <div class="mb-10">
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
         <h3 class="text-sm text-white/70 mb-4">
-          Absenteísmo por Gênero <span class="info-icon" data-tooltip="Distribuição dos afastamentos por gênero.">i</span>
+          Absenteísmo por Gênero <span class="info-icon" data-tooltip="Compara a distribuição de atestados e dias de afastamento entre os gêneros. Disparidades significativas podem refletir questões específicas como licenças maternidade/paternidade, diferenças nas funções desempenhadas ou fatores culturais/comportamentais relacionados à saúde que afetam cada gênero de forma distinta.">i</span>
         </h3>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <h4 class="text-xs text-white/50 mb-2 text-center">Distribuição de Atestados</h4>
-            <div class="h-40 flex items-center justify-center">
-              <canvas id="genderCountChart"></canvas>
-            </div>
+            <h4 class="text-sm text-white/70 mb-3 text-center font-medium">Distribuição de Atestados <span class="info-icon" data-tooltip="Mostra a proporção de atestados emitidos para cada gênero. Analise se a distribuição é proporcional ao número de funcionários de cada gênero na empresa. Disparidades podem indicar diferentes comportamentos de busca por assistência médica entre os gêneros ou riscos específicos nas funções desempenhadas.">i</span></h4>
+            <div id="genderCountChart" class="h-48"></div>
           </div>
           <div>
-            <h4 class="text-xs text-white/50 mb-2 text-center">Dias Afastados</h4>
-            <div class="h-40 flex items-center justify-center">
-              <canvas id="genderDaysChart"></canvas>
-            </div>
+            <h4 class="text-sm text-white/70 mb-3 text-center font-medium">Dias Afastados <span class="info-icon" data-tooltip="Apresenta o total de dias de afastamento por gênero. Compare com o gráfico ao lado para identificar se algum gênero tende a ter afastamentos mais longos. Por exemplo, um gênero pode ter menos atestados mas com duração maior, sugerindo condições de saúde mais graves ou crônicas.">i</span></h4>
+            <div id="genderDaysChart" class="h-48"></div>
           </div>
         </div>
       </div>
     </div>    
-
     
     <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-10">
-      <h3 class="text-sm text-white/70 mb-4">Correlação Idade vs. Patologia <span class="info-icon" data-tooltip="Mapa de calor entre faixas etárias e grupos patológicos.">i</span></h3>
-      <div class="h-80">
-        <div id="hexbinChart" class="h-full"></div>
-      </div>
-      <div class="hexbin-legend mt-2">Intensidade da cor indica frequência: <span class="text-blue-200">azul claro</span> = baixa, <span class="text-blue-900">azul escuro</span> = alta</div>
+      <h3 class="text-sm text-white/70 mb-4">Correlação Idade vs. Patologia (Radar) <span class="info-icon" data-tooltip="Visualiza a distribuição de patologias entre diferentes faixas etárias. O formato radar permite identificar rapidamente quais condições de saúde afetam mais cada grupo etário. Padrões específicos podem guiar programas de prevenção direcionados, como campanhas de conscientização sobre doenças cardiovasculares para faixas etárias mais elevadas ou ergonomia para grupos mais jovens com alta incidência de problemas musculoesqueléticos.">i</span></h3>
+      <div id="heatmapChart" class="h-96"></div>
+      <div class="text-xs text-white/60 mt-2 text-center">Maiores valores indicam maior frequência na faixa etária</div>
     </div>
     <div class="bg-white/5 border border-white/10 rounded-2xl shadow-xl overflow-hidden mb-10">
-      <div class="p-6">
-        <h2 class="text-xl text-white font-semibold mb-4">Bradford Factor: Impacto Disruptivo <span class="info-icon" data-tooltip="Mede o impacto dos afastamentos.">i</span></h2>
+      <div class="p-6 bg-[#002844]">
+        <h2 class="text-xl text-white font-semibold mb-1">Bradford Factor: Impacto Disruptivo <span class="info-icon" data-tooltip="O Bradford Factor é uma fórmula que destaca o impacto negativo de ausências curtas e frequentes (SxSxD, onde S=número de episódios e D=dias totais). Funcionários com índice Bradford elevado causam maior disrupção operacional e merecem atenção especial da gestão, seja para suporte de saúde ou investigação de possíveis abusos.">i</span></h2>
+        <p class="text-white/60 text-sm">Os 20 funcionários com maior índice de Bradford</p>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full border-collapse">
@@ -210,7 +190,7 @@ html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
       {% for sexo_nome, cids in cids_por_genero.items %}
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">Principais CIDs - {{ sexo_nome }} <span class="info-icon" data-tooltip="Top 5 grupos patológicos para o gênero {{ sexo_nome }}.">i</span></h3>
+        <h3 class="text-sm text-white/70 mb-4">Principais CIDs - {{ sexo_nome }} <span class="info-icon" data-tooltip="Apresenta os 5 grupos patológicos mais frequentes para o gênero {{ sexo_nome }}. A análise por gênero permite identificar condições de saúde específicas que afetam desproporcionalmente cada grupo, possibilitando o desenvolvimento de programas de saúde ocupacional mais direcionados e eficazes.">i</span></h3>
         <div class="overflow-x-auto">
           <table class="w-full border-collapse">
             <thead class="bg-[#002844]">
@@ -239,7 +219,7 @@ html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh
       {% endfor %}
     </div>
     <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-10">
-      <h3 class="text-sm text-white/70 mb-4">Distribuição de CIDs por Grupo <span class="info-icon" data-tooltip="Análise dos principais grupos patológicos por prefixo de setor.">i</span></h3>
+      <h3 class="text-sm text-white/70 mb-4">Distribuição de CIDs por Grupo <span class="info-icon" data-tooltip="Analisa as principais patologias em cada grupo operacional (F, M, S, T). Permite identificar problemas de saúde específicos relacionados às diferentes funções ou ambientes de trabalho. Por exemplo, alta incidência de problemas respiratórios em um determinado grupo pode sugerir exposição a agentes irritantes ou condições inadequadas naquela área.">i</span></h3>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {% for prefixo, cids in cids_por_prefixo_setor.items %}
         <div>
@@ -275,117 +255,414 @@ html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh
 <div id="tooltip" class="tooltip"></div>
 <script>
 const chartData = JSON.parse('{{ chart_data|safe }}');
-const colors = { blue: '#0072BC', lightBlue: '#3498db', green: '#2ecc71', orange: '#e67e22', red: '#e74c3c', purple: '#9b59b6', yellow: '#f1c40f', gray: 'rgba(255, 255, 255, 0.3)', text: 'rgba(255, 255, 255, 0.7)' };
-function validateChartData(chartKey, data) { if (!data || !data.labels || !data.labels.length) { return false; } if (data.data) { const hasNaN = data.data.some(value => isNaN(parseFloat(value))); if (hasNaN) { return false; } } return true; }
-const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: colors.text } }, tooltip: { callbacks: { label: function(context) { let label = context.dataset.label ? context.dataset.label + ': ' : ''; if (context.parsed.y !== null) { if (context.dataset.label === 'R$') { label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y); } else { label += context.parsed.y; } } return label; } } } }, scales: { x: { ticks: { color: colors.text }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { ticks: { color: colors.text }, grid: { color: 'rgba(255, 255, 255, 0.05)' } } } };
-const durationCtx = document.getElementById('durationChart').getContext('2d');
-new Chart(durationCtx, { type: 'bar', data: { labels: chartData.duracao_patterns.labels, datasets: [{ label: 'Quantidade', data: chartData.duracao_patterns.data, backgroundColor: [colors.blue, colors.green, colors.orange, colors.purple, colors.red], borderWidth: 0 }] }, options: chartOptions });
-const weekdayCtx = document.getElementById('weekdayChart').getContext('2d');
-new Chart(weekdayCtx, { type: 'bar', data: { labels: chartData.dia_semana.labels, datasets: [{ label: 'Quantidade', data: chartData.dia_semana.data, backgroundColor: colors.lightBlue, borderWidth: 0 }] }, options: chartOptions });
-const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
-new Chart(evolutionCtx, { type: 'line', data: { labels: chartData.evolucao_mensal.labels, datasets: [{ label: 'Atestados', data: chartData.evolucao_mensal.data_count, borderColor: colors.blue, backgroundColor: 'rgba(0, 114, 188, 0.1)', borderWidth: 2, yAxisID: 'y', fill: true, tension: 0.2 }, { label: 'Dias Afastados', data: chartData.evolucao_mensal.data_dias, borderColor: colors.orange, backgroundColor: 'rgba(230, 126, 34, 0.1)', borderWidth: 2, yAxisID: 'y1', fill: false, tension: 0.2 }] }, options: { ...chartOptions, scales: { x: { ticks: { color: colors.text }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Atestados', color: colors.text }, ticks: { color: colors.text }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Dias', color: colors.text }, ticks: { color: colors.text }, grid: { drawOnChartArea: false, color: 'rgba(255, 255, 255, 0.05)' } } } } });
-const sectorCtx = document.getElementById('sectorChart').getContext('2d');
-new Chart(sectorCtx, { type: 'bar', data: { labels: chartData.absenteismo_por_setor.labels, datasets: [ { label: 'Dias', data: chartData.absenteismo_por_setor.data_dias, backgroundColor: colors.orange, borderWidth: 0, order: 1 }, { label: 'Quantidade', data: chartData.absenteismo_por_setor.data_count, backgroundColor: colors.blue, borderWidth: 0, order: 2, type: 'line', pointBackgroundColor: colors.blue, pointRadius: 4 } ] }, options: chartOptions });
-const cidCtx = document.getElementById('cidChart').getContext('2d');
-if (validateChartData('absenteismo_por_cid', chartData.absenteismo_por_cid)) {
-  try {
-    new Chart(cidCtx, { type: 'bar', data: { labels: chartData.absenteismo_por_cid.labels, datasets: [ { label: 'Quantidade', data: chartData.absenteismo_por_cid.data_count.map(val => parseInt(val) || 0), backgroundColor: colors.purple, borderWidth: 0 }, { label: 'Dias', data: chartData.absenteismo_por_cid.data_dias.map(val => parseInt(val) || 0), backgroundColor: colors.green, borderWidth: 0 } ] }, options: { ...chartOptions, indexAxis: 'y' } });
-  } catch (error) {
-    cidCtx.canvas.parentNode.innerHTML = '<div class="chart-placeholder">Erro ao renderizar o gráfico.</div>';
+
+const colors = { 
+  blue: '#0072BC',
+  lightBlue: '#3498db',
+  green: '#2ecc71',
+  orange: '#e67e22',
+  red: '#e74c3c',
+  purple: '#9b59b6',
+  yellow: '#f1c40f',
+  gray: 'rgba(255, 255, 255, 0.3)', 
+  text: 'rgba(255, 255, 255, 0.7)' 
+};
+
+const commonOptions = {
+  chart: {
+    fontFamily: 'Inter, sans-serif',
+    background: 'transparent',
+    toolbar: {
+      show: true,
+      tools: {
+        download: true,
+        selection: true,
+        zoom: true,
+        zoomin: true,
+        zoomout: true,
+        pan: true,
+        reset: true,
+        customIcons: []
+      },
+      export: {
+        csv: {
+          filename: 'dados-chart',
+          columnDelimiter: ',',
+          headerCategory: 'categoria',
+          headerValue: 'valor'
+        },
+        svg: {
+          filename: 'grafico'
+        },
+        png: {
+          filename: 'grafico'
+        }
+      },
+      autoSelected: 'zoom'
+    },
+    animations: { enabled: true, easing: 'easeinout', speed: 800 }
+  },
+  theme: { mode: 'dark' },
+  colors: [colors.blue, colors.green, colors.orange, colors.purple, colors.red],
+  stroke: { curve: 'smooth', width: 2 },
+  grid: {
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    strokeDashArray: 3,
+    position: 'back'
+  },
+  xaxis: {
+    labels: { style: { colors: colors.text, fontSize: '11px' } },
+    axisBorder: { show: false },
+    axisTicks: { show: false }
+  },
+  yaxis: {
+    labels: { style: { colors: colors.text, fontSize: '11px' } }
+  },
+  tooltip: { theme: 'dark' },
+  legend: {
+    position: 'top',
+    horizontalAlign: 'center',
+    labels: { colors: colors.text },
+    markers: { width: 12, height: 12, strokeWidth: 0, radius: 12 },
+    itemMargin: { horizontal: 8, vertical: 0 },
+    fontSize: '12px',
+    fontFamily: 'Inter, sans-serif'
+  },
+  responsive: [
+    { breakpoint: 640, options: { legend: { position: 'bottom' } } }
+  ]
+};
+
+const durationOptions = {
+  ...commonOptions,
+  chart: { ...commonOptions.chart, type: 'bar', height: 250 },
+  series: [{ name: 'Quantidade', data: chartData.duracao_patterns.data }],
+  xaxis: { ...commonOptions.xaxis, categories: chartData.duracao_patterns.labels },
+  plotOptions: { bar: { borderRadius: 4, columnWidth: '70%', distributed: true } },
+  legend: { show: false },
+  dataLabels: { enabled: false },
+  tooltip: {
+    theme: 'dark',
+    y: {
+      formatter: function(value) {
+        const total = chartData.duracao_patterns.data.reduce((a, b) => a + b, 0);
+        const percentage = ((value / total) * 100).toFixed(1);
+        return `${value} (${percentage}% do total)`;
+      }
+    }
   }
-} else {
-  cidCtx.canvas.parentNode.innerHTML = '<div class="chart-placeholder">Sem dados suficientes para gerar este gráfico</div>';
-}
-const genderCountCtx = document.getElementById('genderCountChart').getContext('2d');
-new Chart(genderCountCtx, { type: 'pie', data: { labels: chartData.genero.labels, datasets: [{ data: chartData.genero.count, backgroundColor: [colors.blue, colors.purple, colors.gray], borderWidth: 0 }] }, options: { plugins: { legend: { display: true, position: 'bottom', labels: { color: colors.text, font: { size: 9 }, boxWidth: 10, padding: 5 } }, tooltip: { callbacks: { label: function(tooltipItem) { const total = tooltipItem.dataset.data.reduce((acc, data) => acc + data, 0); const currentValue = tooltipItem.dataset.data[tooltipItem.dataIndex]; const percentage = ((currentValue / total) * 100).toFixed(1); return `${chartData.genero.labels[tooltipItem.dataIndex]}: ${currentValue} (${percentage}%)`; } } } } } });
-const genderDaysCtx = document.getElementById('genderDaysChart').getContext('2d');
-new Chart(genderDaysCtx, { type: 'pie', data: { labels: chartData.genero.labels, datasets: [{ data: chartData.genero.dias, backgroundColor: [colors.blue, colors.purple, colors.gray], borderWidth: 0 }] }, options: { plugins: { legend: { display: true, position: 'bottom', labels: { color: colors.text, font: { size: 9 }, boxWidth: 10, padding: 5 } }, tooltip: { callbacks: { label: function(tooltipItem) { const total = tooltipItem.dataset.data.reduce((acc, data) => acc + data, 0); const currentValue = tooltipItem.dataset.data[tooltipItem.dataIndex]; const percentage = ((currentValue / total) * 100).toFixed(1); return `${chartData.genero.labels[tooltipItem.dataIndex]}: ${currentValue} dias (${percentage}%)`; } } } } } });
-function createHexbinChart() {
-  const ageCidData = chartData.age_cid_correlation.data;
-  if (!ageCidData || !ageCidData.length) {
-    document.getElementById('hexbinChart').innerHTML = "<div class='flex items-center justify-center h-full text-white/70'>Dados insuficientes para gerar o gráfico de correlação</div>";
-    return;
+};
+new ApexCharts(document.querySelector("#durationChart"), durationOptions).render();
+
+const weekdayOptions = {
+  ...commonOptions,
+  chart: { ...commonOptions.chart, type: 'bar', height: 250 },
+  colors: [colors.lightBlue],
+  series: [{ name: 'Quantidade', data: chartData.dia_semana.data }],
+  xaxis: { ...commonOptions.xaxis, categories: chartData.dia_semana.labels },
+  plotOptions: { bar: { borderRadius: 4, columnWidth: '70%' } },
+  legend: { show: false },
+  dataLabels: { enabled: false },
+  tooltip: {
+    theme: 'dark',
+    y: {
+      formatter: function(value) {
+        const total = chartData.dia_semana.data.reduce((a, b) => a + b, 0);
+        const percentage = ((value / total) * 100).toFixed(1);
+        return `${value} (${percentage}% do total)`;
+      }
+    }
   }
-  const width = document.getElementById('hexbinChart').clientWidth;
-  const height = document.getElementById('hexbinChart').clientHeight;
-  const margin = {top: 40, right: 20, bottom: 50, left: 100};
-  const innerWidth = width - margin.left - margin.right;
-  const innerHeight = height - margin.top - margin.bottom;
-  const uniqueAgeRanges = [...new Set(ageCidData.map(d => d.age_range))].sort((a, b) => parseInt(a.split('-')[0]) - parseInt(b.split('-')[0]));
-  const uniqueCids = [...new Set(ageCidData.map(d => d.cid))];
-  const maxCount = Math.max(...ageCidData.map(d => d.count));
-  const xScale = d3.scaleBand().domain(uniqueAgeRanges).range([0, innerWidth]).padding(0.1);
-  const yScale = d3.scaleBand().domain(uniqueCids).range([0, innerHeight]).padding(0.1);
-  const colorScale = d3.scaleSequential().domain([0, maxCount]).interpolator(d3.interpolateBlues);
-  const svg = d3.select('#hexbinChart').append('svg').attr('width', width).attr('height', height);
-  const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
-  g.selectAll('rect').data(ageCidData).enter().append('rect')
-    .attr('x', d => xScale(d.age_range))
-    .attr('y', d => yScale(d.cid))
-    .attr('width', xScale.bandwidth())
-    .attr('height', yScale.bandwidth())
-    .attr('fill', d => colorScale(d.count))
-    .attr('stroke', 'rgba(255, 255, 255, 0.1)')
-    .attr('rx', 2)
-    .attr('ry', 2);
-  g.append('g').attr('transform', `translate(0, ${innerHeight})`)
-    .call(d3.axisBottom(xScale))
-    .selectAll('text')
-    .attr('fill', 'rgba(255, 255, 255, 0.7)')
-    .attr('transform', 'rotate(-45)')
-    .attr('text-anchor', 'end')
-    .attr('dx', '-.8em')
-    .attr('dy', '.15em');
-  g.append('g').call(d3.axisLeft(yScale))
-    .selectAll('text')
-    .attr('fill', 'rgba(255, 255, 255, 0.7)')
-    .call(function(text) {
-      text.each(function() {
-        const t = d3.select(this);
-        const words = t.text().split(/\s+/);
-        t.text(words.length > 3 ? words.slice(0, 3).join(' ') + '...' : words.join(' '));
-      });
+};
+new ApexCharts(document.querySelector("#weekdayChart"), weekdayOptions).render();
+
+const evolutionOptions = {
+  ...commonOptions,
+  chart: { ...commonOptions.chart, type: 'line', height: 250 },
+  colors: [colors.blue, colors.orange],
+  series: [
+    { name: 'Atestados', type: 'area', data: chartData.evolucao_mensal.data_count },
+    { name: 'Dias Afastados', type: 'line', data: chartData.evolucao_mensal.data_dias }
+  ],
+  xaxis: { ...commonOptions.xaxis, categories: chartData.evolucao_mensal.labels },
+  fill: {
+    type: ['gradient', 'solid'],
+    gradient: {
+      shade: 'dark', type: "vertical", shadeIntensity: 0.2,
+      opacityFrom: 0.5, opacityTo: 0.1, stops: [0, 90, 100]
+    }
+  },
+  stroke: { curve: 'smooth', width: [3, 3] },
+  markers: { size: 4, strokeWidth: 0, hover: { size: 6 } }
+};
+new ApexCharts(document.querySelector("#evolutionChart"), evolutionOptions).render();
+
+const sectorOptions = {
+  ...commonOptions,
+  chart: { ...commonOptions.chart, type: 'bar', height: 250, stacked: false },
+  colors: [colors.orange, colors.blue],
+  series: [
+    { name: 'Dias', data: chartData.absenteismo_por_setor.data_dias },
+    { name: 'Quantidade', data: chartData.absenteismo_por_setor.data_count }
+  ],
+  xaxis: { ...commonOptions.xaxis, categories: chartData.absenteismo_por_setor.labels },
+  plotOptions: {
+    bar: { horizontal: true, dataLabels: { position: 'top' }, borderRadius: 4, columnWidth: '70%' }
+  },
+  dataLabels: { enabled: false }
+};
+new ApexCharts(document.querySelector("#sectorChart"), sectorOptions).render();
+
+const cidOptions = {
+  ...commonOptions,
+  chart: { ...commonOptions.chart, type: 'bar', height: 250 },
+  colors: [colors.purple, colors.green],
+  series: [
+    { name: 'Quantidade', data: chartData.absenteismo_por_cid.data_count.map(val => parseInt(val) || 0) },
+    { name: 'Dias', data: chartData.absenteismo_por_cid.data_dias.map(val => parseInt(val) || 0) }
+  ],
+  xaxis: { ...commonOptions.xaxis, categories: chartData.absenteismo_por_cid.labels },
+  plotOptions: {
+    bar: { horizontal: true, dataLabels: { position: 'top' }, borderRadius: 4, columnWidth: '70%' }
+  },
+  dataLabels: { enabled: false }
+};
+new ApexCharts(document.querySelector("#cidChart"), cidOptions).render();
+
+const genderCountOptions = {
+  chart: { 
+    type: 'pie', 
+    height: 200,
+    background: 'transparent',
+    toolbar: {
+      show: true,
+      tools: {
+        download: true,
+        selection: false,
+        zoom: false,
+        zoomin: false,
+        zoomout: false,
+        pan: false,
+        reset: false
+      }
+    },
+    animations: { enabled: true, easing: 'easeinout', speed: 800 }
+  },
+  colors: ['#3498db', '#9b59b6', 'rgba(149, 165, 166, 0.8)'],
+  series: chartData.genero.count,
+  labels: chartData.genero.labels,
+  theme: { mode: 'dark' },
+  legend: {
+    position: 'bottom',
+    fontSize: '11px',
+    fontFamily: 'Inter, sans-serif',
+    labels: { colors: colors.text },
+    markers: { width: 10, height: 10, radius: 2 }
+  },
+  tooltip: {
+    theme: 'dark',
+    y: {
+      formatter: function(value) {
+        return Math.round(value);
+      }
+    }
+  },
+  responsive: [{
+    breakpoint: 480,
+    options: { legend: { position: 'bottom' } }
+  }]
+};
+new ApexCharts(document.querySelector("#genderCountChart"), genderCountOptions).render();
+
+const genderDaysOptions = {
+  chart: { 
+    type: 'pie', 
+    height: 200,
+    background: 'transparent',
+    toolbar: { show: false },
+    animations: { enabled: true, easing: 'easeinout', speed: 800 }
+  },
+  colors: ['#3498db', '#9b59b6', 'rgba(149, 165, 166, 0.8)'],
+  series: chartData.genero.dias,
+  labels: chartData.genero.labels,
+  theme: { mode: 'dark' },
+  legend: {
+    position: 'bottom',
+    fontSize: '11px',
+    fontFamily: 'Inter, sans-serif',
+    labels: { colors: colors.text },
+    markers: { width: 10, height: 10, radius: 2 }
+  },
+  tooltip: {
+    theme: 'dark',
+    y: {
+      formatter: function(value) {
+        return Math.round(value);
+      }
+    }
+  },
+  responsive: [{
+    breakpoint: 480,
+    options: { legend: { position: 'bottom' } }
+  }]
+};
+new ApexCharts(document.querySelector("#genderDaysChart"), genderDaysOptions).render();
+
+let radarSeries = [];
+let patologias = [];
+
+// Primeiro identificar todos os grupos patológicos únicos para formar as dimensões do radar
+chartData.age_cid_correlation.data.forEach(item => {
+  if (!patologias.includes(item.cid)) {
+    patologias.push(item.cid);
+  }
+});
+
+// Criar as séries para cada faixa etária
+let faixasEtarias = {};
+chartData.age_cid_correlation.data.forEach(item => {
+  if (!faixasEtarias[item.age_range]) {
+    faixasEtarias[item.age_range] = {};
+    // Inicializar todos os valores com zero
+    patologias.forEach(patologia => {
+      faixasEtarias[item.age_range][patologia] = 0;
     });
-  // Removidos os textos de legenda dos eixos X e Y
-  const tooltip = d3.select('body').append('div').attr('class', 'hexbin-tooltip').style('opacity', 0);
-  g.selectAll('rect').on('mouseover', function(event, d) {
-    tooltip.transition().duration(200).style('opacity', 0.9);
-    tooltip.html(`<div><strong>Faixa Etária:</strong> ${d.age_range}</div>
-                  <div><strong>Grupo Patológico:</strong> ${d.cid}</div>
-                  <div><strong>Frequência:</strong> ${d.count} ocorrências</div>
-                  <div><em>Quanto mais escuro, maior a frequência</em></div>`)
-      .style('left', (event.pageX + 10) + 'px')
-      .style('top', (event.pageY - 28) + 'px');
-  }).on('mouseout', function() {
-    tooltip.transition().duration(500).style('opacity', 0);
-  });
-  const legendWidth = 20;
-  const legendHeight = innerHeight / 2;
-  const legendScale = d3.scaleSequential().domain([0, maxCount]).interpolator(d3.interpolateBlues);
-  const defs = svg.append('defs');
-  const linearGradient = defs.append('linearGradient').attr('id', 'linear-gradient')
-    .attr('x1', '0%').attr('y1', '100%').attr('x2', '0%').attr('y2', '0%');
-  const steps = 10;
-  for (let i = 0; i <= steps; i++) {
-    linearGradient.append('stop').attr('offset', i / steps).attr('stop-color', legendScale(maxCount * i / steps));
   }
-  const legend = svg.append('g').attr('transform', `translate(${width - margin.right - legendWidth}, ${margin.top})`);
-  legend.append('rect').attr('width', legendWidth).attr('height', legendHeight)
-    .style('fill', 'url(#linear-gradient)').style('stroke', 'rgba(255, 255, 255, 0.1)');
-  const legendAxis = d3.axisRight(d3.scaleLinear().domain([0, maxCount]).range([legendHeight, 0])).ticks(5);
-  legend.append('g').attr('transform', `translate(${legendWidth}, 0)`)
-    .call(legendAxis).selectAll('text').attr('fill', 'rgba(255, 255, 255, 0.7)');
-  legend.append('text').attr('transform', 'rotate(90)')
-    .attr('x', legendHeight / 2).attr('y', -legendWidth - 10)
-    .attr('text-anchor', 'middle').attr('fill', 'rgba(255, 255, 255, 0.7)')
-    .attr('font-size', '10px').text('Frequência de Ocorrências');
-  legend.append('text').attr('x', legendWidth / 2).attr('y', legendHeight + 15)
-    .attr('text-anchor', 'middle').attr('fill', 'rgba(255, 255, 255, 0.7)')
-    .attr('font-size', '8px').text('Baixa');
-  legend.append('text').attr('x', legendWidth / 2).attr('y', -5)
-    .attr('text-anchor', 'middle').attr('fill', 'rgba(255, 255, 255, 0.7)')
-    .attr('font-size', '8px').text('Alta');
+  // Atribuir os valores reais
+  faixasEtarias[item.age_range][item.cid] = item.count;
+});
+
+// Converter para o formato de séries do ApexCharts
+for (let faixaEtaria in faixasEtarias) {
+  let serieData = [];
+  patologias.forEach(patologia => {
+    serieData.push(faixasEtarias[faixaEtaria][patologia]);
+  });
+  
+  radarSeries.push({
+    name: faixaEtaria,
+    data: serieData
+  });
 }
+
+const radarOptions = {
+  chart: { 
+    type: 'radar', 
+    height: 400,
+    background: 'transparent',
+    toolbar: {
+      show: true,
+      tools: {
+        download: true,
+        selection: true,
+        zoom: true,
+        zoomin: true,
+        zoomout: true,
+        pan: true,
+        reset: true
+      },
+      export: {
+        csv: {
+          filename: 'correlacao-idade-patologia',
+          columnDelimiter: ',',
+          headerCategory: 'Patologia',
+          headerValue: 'Valor'
+        },
+        svg: {
+          filename: 'correlacao-idade-patologia'
+        },
+        png: {
+          filename: 'correlacao-idade-patologia'
+        }
+      }
+    },
+    dropShadow: {
+      enabled: true,
+      blur: 1,
+      left: 1,
+      top: 1
+    }
+  },
+  series: radarSeries,
+  theme: {
+    mode: 'dark',
+    palette: 'palette1'
+  },
+  colors: ['#3498db', '#9b59b6', '#2ecc71', '#f1c40f', '#e74c3c'],
+  labels: patologias,
+  stroke: {
+    width: 2
+  },
+  fill: {
+    opacity: 0.2
+  },
+  markers: {
+    size: 5,
+    hover: {
+      size: 8
+    }
+  },
+  title: {
+    text: 'Correlação Idade vs. Patologia',
+    align: 'center',
+    style: { 
+      color: colors.text,
+      fontSize: '14px' 
+    }
+  },
+  xaxis: {
+    labels: { 
+      style: { 
+        colors: Array(patologias.length).fill(colors.text),
+        fontSize: '11px'
+      }
+    }
+  },
+  yaxis: {
+    labels: {
+      formatter: function(val) {
+        return Math.round(val);
+      },
+      style: {
+        colors: colors.text
+      }
+    }
+  },
+  tooltip: {
+    theme: 'dark',
+    y: {
+      formatter: function(value) {
+        return Math.round(value) + ' ocorrência' + (value === 1 ? '' : 's');
+      }
+    }
+  },
+  legend: {
+    position: 'bottom',
+    horizontalAlign: 'center',
+    offsetY: 10,
+    itemMargin: {
+      horizontal: 8,
+      vertical: 5
+    },
+    labels: {
+      colors: colors.text
+    }
+  },
+  responsive: [
+    {
+      breakpoint: 768,
+      options: {
+        chart: {
+          height: 350
+        }
+      }
+    }
+  ]
+};
+new ApexCharts(document.querySelector("#heatmapChart"), radarOptions).render();
+new ApexCharts(document.querySelector("#heatmapChart"), heatmapOptions).render();
+new ApexCharts(document.querySelector("#heatmapChart"), heatmapOptions).render();
+
 function setupTooltips() {
   const tooltip = document.getElementById('tooltip');
   const infoIcons = document.querySelectorAll('.info-icon');
@@ -407,7 +684,9 @@ function setupTooltips() {
     icon.addEventListener('mouseleave', () => { tooltip.classList.remove('visible'); });
   });
 }
-window.addEventListener('DOMContentLoaded', () => { createHexbinChart(); setupTooltips(); });
-window.addEventListener('resize', function() { document.getElementById('hexbinChart').innerHTML = ''; createHexbinChart(); });
+
+document.addEventListener('DOMContentLoaded', function() {
+  setupTooltips();
+});
 </script>
 {% endblock %}
