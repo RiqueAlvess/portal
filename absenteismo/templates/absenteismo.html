@@ -6,110 +6,17 @@
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-hexbin@0.2"></script>
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    background-color: #00325A;
-    min-height: 100vh;
-  }
-  
-  .hexbin-tooltip {
-    position: absolute;
-    background: rgba(0, 50, 90, 0.9);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-    padding: 8px;
-    font-size: 12px;
-    pointer-events: none;
-    z-index: 100;
-    max-width: 200px;
-  }
-  
-  .info-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 12px;
-    font-weight: bold;
-    cursor: help;
-    margin-left: 6px;
-    transition: all 0.2s ease;
-  }
-  
-  .info-icon:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-  }
-  
-  .tooltip {
-    position: absolute;
-    visibility: hidden;
-    max-width: 250px;
-    background-color: rgba(0, 25, 50, 0.95);
-    color: white;
-    border-radius: 6px;
-    padding: 10px;
-    font-size: 12px;
-    line-height: 1.4;
-    z-index: 100;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: opacity 0.2s;
-    opacity: 0;
-  }
-  
-  .tooltip.visible {
-    visibility: visible;
-    opacity: 1;
-  }
-
-  .color-scale-legend {
-    margin-top: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .color-scale {
-    height: 10px;
-    width: 200px;
-    background: linear-gradient(to right, #f7fbff, #08306b);
-    border-radius: 2px;
-  }
-
-  .color-labels {
-    display: flex;
-    width: 200px;
-    justify-content: space-between;
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.7);
-  }
-
-  .hexbin-legend {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.7);
-    text-align: center;
-    margin-top: 5px;
-  }
-
-  .chart-placeholder {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(255, 255, 255, 0.03);
-    border-radius: 8px;
-    border: 1px dashed rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 14px;
-    padding: 20px;
-  }
+html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh; }
+.hexbin-tooltip { position: absolute; background: rgba(0, 50, 90, 0.9); color: white; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 4px; padding: 8px; font-size: 12px; pointer-events: none; z-index: 100; max-width: 200px; }
+.info-icon { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.7); font-size: 12px; font-weight: bold; cursor: help; margin-left: 6px; transition: all 0.2s ease; }
+.info-icon:hover { background-color: rgba(255, 255, 255, 0.3); }
+.tooltip { position: absolute; visibility: hidden; max-width: 250px; background-color: rgba(0, 25, 50, 0.95); color: white; border-radius: 6px; padding: 10px; font-size: 12px; line-height: 1.4; z-index: 100; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); transition: opacity 0.2s; opacity: 0; }
+.tooltip.visible { visibility: visible; opacity: 1; }
+.color-scale-legend { margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.color-scale { height: 10px; width: 200px; background: linear-gradient(to right, #f7fbff, #08306b); border-radius: 2px; }
+.color-labels { display: flex; width: 200px; justify-content: space-between; font-size: 10px; color: rgba(255, 255, 255, 0.7); }
+.hexbin-legend { font-size: 11px; color: rgba(255, 255, 255, 0.7); text-align: center; margin-top: 5px; }
+.chart-placeholder { height: 100%; display: flex; align-items: center; justify-content: center; background-color: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px dashed rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5); font-size: 14px; padding: 20px; }
 </style>
 {% endblock %}
 
@@ -117,7 +24,6 @@
 <div class="px-10 py-12 bg-[#00325A] min-h-screen w-full">
   <div class="max-w-7xl mx-auto">
     <h1 class="text-2xl font-bold text-white mb-8">Absenteísmo - {{ empresa_ativa.RAZAOSOCIAL }}</h1>
-
     <form method="get" class="flex flex-wrap gap-4 mb-10 items-end">
       <div>
         <label class="text-white/70 text-sm">Período</label>
@@ -158,187 +64,113 @@
         </select>
       </div>
     </form>
-
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">
-          Bradford Crítico
-          <span class="info-icon" data-tooltip="Número de colaboradores com índice Bradford superior a 500, indicando alto risco disruptivo. Bradford Factor = S² × D, onde S é o número de episódios de ausência e D é o total de dias de ausência. Valores acima de 500 indicam padrão crítico de absenteísmo que impacta significativamente a operação.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-1">Bradford Crítico <span class="info-icon" data-tooltip="Número de colaboradores com índice Bradford superior a 500.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ bradford_critico_count }}</p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">
-          Impacto Financeiro
-          <span class="info-icon" data-tooltip="Estimativa do custo total relacionado ao absenteísmo. Calculado com base no valor hora de R$ 8,02 (salário mínimo dividido por 176 horas mensais) multiplicado pelo total de horas perdidas. Considera 8 horas por dia para atestados em dias e 4 horas para declarações em horas.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-1">Impacto Financeiro <span class="info-icon" data-tooltip="Valor total das horas perdidas.">i</span></h3>
         <p class="text-3xl font-bold text-white">R$ {{ impacto_financeiro|floatformat:2 }}</p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">
-          Taxa de Reincidência
-          <span class="info-icon" data-tooltip="Percentual de colaboradores que apresentaram mais de um episódio de afastamento no período. Calculado como: (Funcionários com 2+ atestados ÷ Total de funcionários com atestados) × 100. Valores altos podem indicar problemas crônicos de saúde ou possíveis abusos no sistema.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-1">Taxa de Reincidência <span class="info-icon" data-tooltip="Percentual de colaboradores com 2+ atestados.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ taxa_reincidencia|floatformat:1 }}%</p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">
-          Taxa de Absenteísmo
-          <span class="info-icon" data-tooltip="Percentual de dias perdidos em relação ao total de dias úteis trabalhados potencialmente. Calculado como: (Total de dias perdidos ÷ (Total de funcionários × dias úteis no período)) × 100. Referência da indústria: taxas abaixo de 3% são consideradas saudáveis.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-1">Taxa de Absenteísmo <span class="info-icon" data-tooltip="Percentual de dias perdidos em relação aos dias úteis.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ taxa_absenteismo|floatformat:2 }}%</p>
       </div>
     </div>
-
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">
-          Total de Funcionários
-          <span class="info-icon" data-tooltip="Número total de colaboradores ativos da empresa no período, excluindo registros genéricos ou duplicados. Este dado é usado como base para os cálculos de taxas e médias.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-1">Total de Funcionários <span class="info-icon" data-tooltip="Número total de colaboradores ativos.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ total_funcionarios }}</p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">
-          Total de Atestados
-          <span class="info-icon" data-tooltip="Número total de episódios de afastamento no período analisado, incluindo atestados em dias e declarações em horas. Cada documento médico é contabilizado como um episódio distinto, independentemente da duração.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-1">Total de Atestados <span class="info-icon" data-tooltip="Número de episódios de afastamento.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ total_atestados }}</p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">
-          Média de Dias por Atestado
-          <span class="info-icon" data-tooltip="Média de dias perdidos por episódio de afastamento. Calculado como: Total de dias perdidos ÷ Total de atestados. Valores mais altos indicam afastamentos mais longos, geralmente associados a condições de saúde mais graves.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-1">Média de Dias por Atestado <span class="info-icon" data-tooltip="Média de dias perdidos por atestado.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ media_dias|floatformat:1 }}</p>
       </div>
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-1">
-          Média de Atestados
-          <span class="info-icon" data-tooltip="Número médio de atestados por funcionário no período. Calculado como: Total de atestados ÷ Total de funcionários. Valores acima de 1 indicam que, em média, cada funcionário teve mais de um episódio de afastamento no período.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-1">Média de Atestados <span class="info-icon" data-tooltip="Atestados por funcionário.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ media_atestados|floatformat:2 }}</p>
       </div>
     </div>
-
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">
-          Análise de Padrões por Duração
-          <span class="info-icon" data-tooltip="Distribuição dos atestados por duração. Segmentados em: declarações em horas, 1-3 dias (geralmente não exigem perícia), 4-7 dias, 8-14 dias, e 15+ dias (geralmente associados a condições mais graves ou crônicas). Padrões desequilibrados podem indicar problemas específicos.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-4">Análise de Padrões por Duração <span class="info-icon" data-tooltip="Distribuição dos atestados por duração.">i</span></h3>
         <div class="h-64">
           <canvas id="durationChart"></canvas>
         </div>
       </div>
-      
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">
-          Distribuição por Dia da Semana
-          <span class="info-icon" data-tooltip="Frequência de início dos afastamentos por dia da semana. Concentrações significativas em segundas ou sextas-feiras podem indicar possíveis abusos. Padrões equilibrados são mais consistentes com ocorrências naturais de adoecimento.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-4">Distribuição por Dia da Semana <span class="info-icon" data-tooltip="Frequência dos afastamentos por dia da semana.">i</span></h3>
         <div class="h-64">
           <canvas id="weekdayChart"></canvas>
         </div>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+    <div class="mb-10">
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">
-          Impacto Financeiro por Patologia
-          <span class="info-icon" data-tooltip="Custo estimado por grupo patológico, calculado multiplicando o valor hora (R$ 8,02) pelo total de horas perdidas. Identifica quais condições médicas geram maior impacto financeiro, ajudando a priorizar ações preventivas e programas de saúde ocupacional.">i</span>
-        </h3>
-        <div class="h-64" id="impactChartContainer">
-          <canvas id="impactChart"></canvas>
-        </div>
-      </div>
-      
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">
-          Evolução do Absenteísmo por Mês
-          <span class="info-icon" data-tooltip="Tendência mensal de episódios de afastamento (linha azul) e dias perdidos (linha laranja). Permite identificar sazonalidades, picos epidêmicos, e avaliar a eficácia de intervenções ao longo do tempo. Tendências crescentes indicam necessidade de ações corretivas.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-4">Evolução do Absenteísmo por Mês <span class="info-icon" data-tooltip="Tendência mensal de atestados e dias perdidos.">i</span></h3>
         <div class="h-64">
           <canvas id="evolutionChart"></canvas>
         </div>
       </div>
     </div>
-
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">
-          Absenteísmo por Setor (Top 10)
-          <span class="info-icon" data-tooltip="Setores com maior volume de dias perdidos (barras) e número de atestados (linha). Ajuda a identificar áreas críticas que podem necessitar de intervenções específicas em saúde ocupacional, ergonomia, ou gestão. Disparidades entre setores podem indicar problemas localizados.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-4">Absenteísmo por Setor (Top 10) <span class="info-icon" data-tooltip="Setores com mais dias perdidos e atestados.">i</span></h3>
         <div class="h-64">
           <canvas id="sectorChart"></canvas>
         </div>
       </div>
-      
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">
-          Absenteísmo por Causa (CID)
-          <span class="info-icon" data-tooltip="Principais códigos CID que geraram afastamentos, mostrando tanto a frequência (número de episódios) quanto a gravidade (dias perdidos). Ajuda a identificar principais problemas de saúde que afetam os colaboradores e direcionar programas específicos de prevenção.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-4">Absenteísmo por Causa (CID) <span class="info-icon" data-tooltip="Principais códigos CID e dias perdidos.">i</span></h3>
         <div class="h-64">
           <canvas id="cidChart"></canvas>
         </div>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+    <div class="mb-10">
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
         <h3 class="text-sm text-white/70 mb-4">
-          Absenteísmo por Gênero
-          <span class="info-icon" data-tooltip="Distribuição dos afastamentos por gênero, tanto em número de atestados quanto em dias perdidos. Diferenças significativas podem refletir a composição da força de trabalho ou indicar riscos específicos por gênero que precisam ser endereçados.">i</span>
+          Absenteísmo por Gênero <span class="info-icon" data-tooltip="Distribuição dos afastamentos por gênero.">i</span>
         </h3>
         <div class="grid grid-cols-2 gap-4">
           <div>
             <h4 class="text-xs text-white/50 mb-2 text-center">Distribuição de Atestados</h4>
-            <div class="h-40">
+            <div class="h-40 flex items-center justify-center">
               <canvas id="genderCountChart"></canvas>
             </div>
           </div>
           <div>
             <h4 class="text-xs text-white/50 mb-2 text-center">Dias Afastados</h4>
-            <div class="h-40">
+            <div class="h-40 flex items-center justify-center">
               <canvas id="genderDaysChart"></canvas>
             </div>
           </div>
         </div>
       </div>
-      
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">
-          Análise de Custos do Absenteísmo
-          <span class="info-icon" data-tooltip="Impacto financeiro por setor, baseado no valor hora de R$ 8,02 multiplicado pelo total de horas perdidas. Permite visualizar quais áreas representam maior custo devido ao absenteísmo, auxiliando na priorização de investimentos em saúde ocupacional.">i</span>
-        </h3>
-        <div class="h-64" id="costChartContainer">
-          <canvas id="costChart"></canvas>
-        </div>
-      </div>
-    </div>
+    </div>    
 
+    
     <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-10">
-      <h3 class="text-sm text-white/70 mb-4">
-        Correlação Idade vs. Patologia
-        <span class="info-icon" data-tooltip="Mapa de calor mostrando a relação entre faixas etárias e grupos patológicos. A intensidade da cor indica a frequência de ocorrência. Permite identificar riscos de saúde específicos por idade, direcionando programas de prevenção e promoção à saúde por faixa etária.">i</span>
-      </h3>
+      <h3 class="text-sm text-white/70 mb-4">Correlação Idade vs. Patologia <span class="info-icon" data-tooltip="Mapa de calor entre faixas etárias e grupos patológicos.">i</span></h3>
       <div class="h-80">
-        <div id="hexbinChart" class="w-full h-full"></div>
+        <div id="hexbinChart" class="h-full"></div>
       </div>
-      <div class="hexbin-legend mt-2">
-        Intensidade da cor indica frequência de ocorrência: <span class="text-blue-200">azul claro</span> = baixa frequência, <span class="text-blue-900">azul escuro</span> = alta frequência
-      </div>
+      <div class="hexbin-legend mt-2">Intensidade da cor indica frequência: <span class="text-blue-200">azul claro</span> = baixa, <span class="text-blue-900">azul escuro</span> = alta</div>
     </div>
-
     <div class="bg-white/5 border border-white/10 rounded-2xl shadow-xl overflow-hidden mb-10">
       <div class="p-6">
-        <h2 class="text-xl text-white font-semibold mb-4">
-          Bradford Factor: Impacto Disruptivo
-          <span class="info-icon" data-tooltip="O Bradford Factor (B = S² × D) mede o impacto disruptivo dos afastamentos, dando maior peso à frequência (S) que à duração (D). Identifica colaboradores com padrões de absenteísmo que causam maior impacto organizacional. Níveis de risco: Baixo (<200), Médio (200-499), Alto (500+).">i</span>
-        </h2>
+        <h2 class="text-xl text-white font-semibold mb-4">Bradford Factor: Impacto Disruptivo <span class="info-icon" data-tooltip="Mede o impacto dos afastamentos.">i</span></h2>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full border-collapse">
@@ -375,14 +207,10 @@
         </table>
       </div>
     </div>
-
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
       {% for sexo_nome, cids in cids_por_genero.items %}
       <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
-        <h3 class="text-sm text-white/70 mb-4">
-          Principais CIDs - {{ sexo_nome }}
-          <span class="info-icon" data-tooltip="Top 5 grupos patológicos (CIDs) mais frequentes entre colaboradores do gênero {{ sexo_nome }}. Permite identificar problemas de saúde específicos por gênero e direcionar programas de prevenção e promoção à saúde segmentados.">i</span>
-        </h3>
+        <h3 class="text-sm text-white/70 mb-4">Principais CIDs - {{ sexo_nome }} <span class="info-icon" data-tooltip="Top 5 grupos patológicos para o gênero {{ sexo_nome }}.">i</span></h3>
         <div class="overflow-x-auto">
           <table class="w-full border-collapse">
             <thead class="bg-[#002844]">
@@ -397,13 +225,11 @@
               <tr class="hover:bg-white/5 transition">
                 <td class="px-4 py-2 text-white/90 text-sm">{{ cid.GRUPO_PATOLOGICO|default:"Não classificado" }}</td>
                 <td class="text-right px-4 py-2 text-white/90 text-sm">{{ cid.count }}</td>
-                <td class="text-right px-4 py-2 text-white/90 text-sm">
-                  {% widthratio cid.count total_atestados 100 %}%
-                </td>
+                <td class="text-right px-4 py-2 text-white/90 text-sm">{% widthratio cid.count total_atestados 100 %}%</td>
               </tr>
               {% empty %}
               <tr>
-                <td colspan="3" class="text-center py-4 text-white/70 text-sm">Nenhum registro encontrado.</td>
+                <td colspan="3" class="text-center py-4 text-white/70 text-xs">Nenhum registro encontrado.</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -412,12 +238,8 @@
       </div>
       {% endfor %}
     </div>
-
     <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-10">
-      <h3 class="text-sm text-white/70 mb-4">
-        Distribuição de CIDs por Setor
-        <span class="info-icon" data-tooltip="Análise dos principais grupos patológicos por grupos de setores (F, M, S, T). Permite identificar riscos ocupacionais específicos associados a diferentes tipos de atividades e ambientes de trabalho, direcionando ações preventivas específicas.">i</span>
-      </h3>
+      <h3 class="text-sm text-white/70 mb-4">Distribuição de CIDs por Grupo <span class="info-icon" data-tooltip="Análise dos principais grupos patológicos por prefixo de setor.">i</span></h3>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {% for prefixo, cids in cids_por_prefixo_setor.items %}
         <div>
@@ -450,612 +272,142 @@
     </div>
   </div>
 </div>
-
 <div id="tooltip" class="tooltip"></div>
-
 <script>
-  const chartData = JSON.parse('{{ chart_data|safe }}');
-  
-  const colors = {
-    blue: '#0072BC',
-    lightBlue: '#3498db',
-    green: '#2ecc71',
-    orange: '#e67e22',
-    red: '#e74c3c',
-    purple: '#9b59b6',
-    yellow: '#f1c40f',
-    gray: 'rgba(255, 255, 255, 0.3)',
-    text: 'rgba(255, 255, 255, 0.7)'
-  };
-  
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        labels: {
-          color: colors.text
-        }
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            if (context.parsed.y !== null) {
-              if (context.dataset.label === 'R$') {
-                label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
-                  .format(context.parsed.y);
-              } else {
-                label += context.parsed.y;
-              }
-            }
-            return label;
-          }
-        }
-      }
-    },
-    scales: {
-      x: {
-        ticks: { color: colors.text },
-        grid: { color: 'rgba(255, 255, 255, 0.05)' }
-      },
-      y: {
-        ticks: { color: colors.text },
-        grid: { color: 'rgba(255, 255, 255, 0.05)' }
-      }
-    }
-  };
-  
-  const durationCtx = document.getElementById('durationChart').getContext('2d');
-  new Chart(durationCtx, {
-    type: 'bar',
-    data: {
-      labels: chartData.duracao_patterns.labels,
-      datasets: [{
-        label: 'Quantidade',
-        data: chartData.duracao_patterns.data,
-        backgroundColor: [colors.blue, colors.green, colors.orange, colors.purple, colors.red],
-        borderWidth: 0
-      }]
-    },
-    options: chartOptions
-  });
-  
-  const weekdayCtx = document.getElementById('weekdayChart').getContext('2d');
-  new Chart(weekdayCtx, {
-    type: 'bar',
-    data: {
-      labels: chartData.dia_semana.labels,
-      datasets: [{
-        label: 'Quantidade',
-        data: chartData.dia_semana.data,
-        backgroundColor: colors.lightBlue,
-        borderWidth: 0
-      }]
-    },
-    options: chartOptions
-  });
-  
-  const impactChartContainer = document.getElementById('impactChartContainer');
-  if (chartData.impacto_por_cid.labels && chartData.impacto_por_cid.labels.length > 0) {
-    const impactCtx = document.getElementById('impactChart').getContext('2d');
-    new Chart(impactCtx, {
-      type: 'bar',
-      data: {
-        labels: chartData.impacto_por_cid.labels,
-        datasets: [{
-          label: 'R$',
-          data: chartData.impacto_por_cid.data,
-          backgroundColor: colors.green,
-          borderWidth: 0
-        }]
-      },
-      options: {
-        ...chartOptions,
-        indexAxis: 'y',
-        plugins: {
-          ...chartOptions.plugins,
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                let label = context.dataset.label || '';
-                if (label) {
-                  label += ': ';
-                }
-                if (context.parsed.x !== null) {
-                  label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
-                    .format(context.parsed.x);
-                }
-                return label;
-              }
-            }
-          }
-        }
-      }
-    });
-  } else {
-    impactChartContainer.innerHTML = '<div class="chart-placeholder">Sem dados suficientes para gerar este gráfico</div>';
+const chartData = JSON.parse('{{ chart_data|safe }}');
+const colors = { blue: '#0072BC', lightBlue: '#3498db', green: '#2ecc71', orange: '#e67e22', red: '#e74c3c', purple: '#9b59b6', yellow: '#f1c40f', gray: 'rgba(255, 255, 255, 0.3)', text: 'rgba(255, 255, 255, 0.7)' };
+function validateChartData(chartKey, data) { if (!data || !data.labels || !data.labels.length) { return false; } if (data.data) { const hasNaN = data.data.some(value => isNaN(parseFloat(value))); if (hasNaN) { return false; } } return true; }
+const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: colors.text } }, tooltip: { callbacks: { label: function(context) { let label = context.dataset.label ? context.dataset.label + ': ' : ''; if (context.parsed.y !== null) { if (context.dataset.label === 'R$') { label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y); } else { label += context.parsed.y; } } return label; } } } }, scales: { x: { ticks: { color: colors.text }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { ticks: { color: colors.text }, grid: { color: 'rgba(255, 255, 255, 0.05)' } } } };
+const durationCtx = document.getElementById('durationChart').getContext('2d');
+new Chart(durationCtx, { type: 'bar', data: { labels: chartData.duracao_patterns.labels, datasets: [{ label: 'Quantidade', data: chartData.duracao_patterns.data, backgroundColor: [colors.blue, colors.green, colors.orange, colors.purple, colors.red], borderWidth: 0 }] }, options: chartOptions });
+const weekdayCtx = document.getElementById('weekdayChart').getContext('2d');
+new Chart(weekdayCtx, { type: 'bar', data: { labels: chartData.dia_semana.labels, datasets: [{ label: 'Quantidade', data: chartData.dia_semana.data, backgroundColor: colors.lightBlue, borderWidth: 0 }] }, options: chartOptions });
+const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
+new Chart(evolutionCtx, { type: 'line', data: { labels: chartData.evolucao_mensal.labels, datasets: [{ label: 'Atestados', data: chartData.evolucao_mensal.data_count, borderColor: colors.blue, backgroundColor: 'rgba(0, 114, 188, 0.1)', borderWidth: 2, yAxisID: 'y', fill: true, tension: 0.2 }, { label: 'Dias Afastados', data: chartData.evolucao_mensal.data_dias, borderColor: colors.orange, backgroundColor: 'rgba(230, 126, 34, 0.1)', borderWidth: 2, yAxisID: 'y1', fill: false, tension: 0.2 }] }, options: { ...chartOptions, scales: { x: { ticks: { color: colors.text }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Atestados', color: colors.text }, ticks: { color: colors.text }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Dias', color: colors.text }, ticks: { color: colors.text }, grid: { drawOnChartArea: false, color: 'rgba(255, 255, 255, 0.05)' } } } } });
+const sectorCtx = document.getElementById('sectorChart').getContext('2d');
+new Chart(sectorCtx, { type: 'bar', data: { labels: chartData.absenteismo_por_setor.labels, datasets: [ { label: 'Dias', data: chartData.absenteismo_por_setor.data_dias, backgroundColor: colors.orange, borderWidth: 0, order: 1 }, { label: 'Quantidade', data: chartData.absenteismo_por_setor.data_count, backgroundColor: colors.blue, borderWidth: 0, order: 2, type: 'line', pointBackgroundColor: colors.blue, pointRadius: 4 } ] }, options: chartOptions });
+const cidCtx = document.getElementById('cidChart').getContext('2d');
+if (validateChartData('absenteismo_por_cid', chartData.absenteismo_por_cid)) {
+  try {
+    new Chart(cidCtx, { type: 'bar', data: { labels: chartData.absenteismo_por_cid.labels, datasets: [ { label: 'Quantidade', data: chartData.absenteismo_por_cid.data_count.map(val => parseInt(val) || 0), backgroundColor: colors.purple, borderWidth: 0 }, { label: 'Dias', data: chartData.absenteismo_por_cid.data_dias.map(val => parseInt(val) || 0), backgroundColor: colors.green, borderWidth: 0 } ] }, options: { ...chartOptions, indexAxis: 'y' } });
+  } catch (error) {
+    cidCtx.canvas.parentNode.innerHTML = '<div class="chart-placeholder">Erro ao renderizar o gráfico.</div>';
   }
-  
-  const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
-  new Chart(evolutionCtx, {
-    type: 'line',
-    data: {
-      labels: chartData.evolucao_mensal.labels,
-      datasets: [
-        {
-          label: 'Atestados',
-          data: chartData.evolucao_mensal.data_count,
-          borderColor: colors.blue,
-          backgroundColor: 'rgba(0, 114, 188, 0.1)',
-          borderWidth: 2,
-          yAxisID: 'y',
-          fill: true,
-          tension: 0.2
-        },
-        {
-          label: 'Dias Afastados',
-          data: chartData.evolucao_mensal.data_dias,
-          borderColor: colors.orange,
-          backgroundColor: 'rgba(230, 126, 34, 0.1)',
-          borderWidth: 2,
-          yAxisID: 'y1',
-          fill: false,
-          tension: 0.2
-        }
-      ]
-    },
-    options: {
-      ...chartOptions,
-      scales: {
-        x: {
-          ticks: { color: colors.text },
-          grid: { color: 'rgba(255, 255, 255, 0.05)' }
-        },
-        y: {
-          type: 'linear',
-          display: true,
-          position: 'left',
-          title: {
-            display: true,
-            text: 'Atestados',
-            color: colors.text
-          },
-          ticks: { color: colors.text },
-          grid: { color: 'rgba(255, 255, 255, 0.05)' }
-        },
-        y1: {
-          type: 'linear',
-          display: true,
-          position: 'right',
-          title: {
-            display: true,
-            text: 'Dias',
-            color: colors.text
-          },
-          ticks: { color: colors.text },
-          grid: {
-            drawOnChartArea: false,
-            color: 'rgba(255, 255, 255, 0.05)'
-          }
-        }
-      }
-    }
-  });
-  
-  const sectorCtx = document.getElementById('sectorChart').getContext('2d');
-  new Chart(sectorCtx, {
-    type: 'bar',
-    data: {
-      labels: chartData.absenteismo_por_setor.labels,
-      datasets: [
-        {
-          label: 'Dias',
-          data: chartData.absenteismo_por_setor.data_dias,
-          backgroundColor: colors.orange,
-          borderWidth: 0,
-          order: 1
-        },
-        {
-          label: 'Quantidade',
-          data: chartData.absenteismo_por_setor.data_count,
-          backgroundColor: colors.blue,
-          borderWidth: 0,
-          order: 2,
-          type: 'line',
-          pointBackgroundColor: colors.blue,
-          pointRadius: 4
-        }
-      ]
-    },
-    options: chartOptions
-  });
-  
-  const cidCtx = document.getElementById('cidChart').getContext('2d');
-  new Chart(cidCtx, {
-    type: 'bar',
-    data: {
-      labels: chartData.absenteismo_por_cid.labels,
-      datasets: [
-        {
-          label: 'Quantidade',
-          data: chartData.absenteismo_por_cid.data_count,
-          backgroundColor: colors.purple,
-          borderWidth: 0
-        },
-        {
-          label: 'Dias',
-          data: chartData.absenteismo_por_cid.data_dias,
-          backgroundColor: colors.green,
-          borderWidth: 0
-        }
-      ]
-    },
-    options: {
-      ...chartOptions,
-      indexAxis: 'y'
-    }
-  });
-  
-  const genderCountCtx = document.getElementById('genderCountChart').getContext('2d');
-  new Chart(genderCountCtx, {
-    type: 'pie',
-    data: {
-      labels: chartData.genero.labels,
-      datasets: [{
-        data: chartData.genero.count,
-        backgroundColor: [colors.blue, colors.purple, colors.gray],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      plugins: {
-        legend: {
-          display: true,
-          position: 'bottom',
-          labels: {
-            color: colors.text,
-            font: {
-              size: 9
-            },
-            boxWidth: 10,
-            padding: 5
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(tooltipItem) {
-              const dataset = tooltipItem.dataset;
-              const total = dataset.data.reduce((acc, data) => acc + data, 0);
-              const currentValue = dataset.data[tooltipItem.dataIndex];
-              const percentage = ((currentValue / total) * 100).toFixed(1);
-              return `${chartData.genero.labels[tooltipItem.dataIndex]}: ${currentValue} (${percentage}%)`;
-            }
-          }
-        }
-      }
-    }
-  });
-  
-  const genderDaysCtx = document.getElementById('genderDaysChart').getContext('2d');
-  new Chart(genderDaysCtx, {
-    type: 'pie',
-    data: {
-      labels: chartData.genero.labels,
-      datasets: [{
-        data: chartData.genero.dias,
-        backgroundColor: [colors.blue, colors.purple, colors.gray],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      plugins: {
-        legend: {
-          display: true,
-          position: 'bottom',
-          labels: {
-            color: colors.text,
-            font: {
-              size: 9
-            },
-            boxWidth: 10,
-            padding: 5
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(tooltipItem) {
-              const dataset = tooltipItem.dataset;
-              const total = dataset.data.reduce((acc, data) => acc + data, 0);
-              const currentValue = dataset.data[tooltipItem.dataIndex];
-              const percentage = ((currentValue / total) * 100).toFixed(1);
-              return `${chartData.genero.labels[tooltipItem.dataIndex]}: ${currentValue} dias (${percentage}%)`;
-            }
-          }
-        }
-      }
-    }
-  });
-  
-  const costChartContainer = document.getElementById('costChartContainer');
-  if (chartData.custo_por_setor.labels && chartData.custo_por_setor.labels.length > 0) {
-    const costCtx = document.getElementById('costChart').getContext('2d');
-    new Chart(costCtx, {
-      type: 'bar',
-      data: {
-        labels: chartData.custo_por_setor.labels,
-        datasets: [{
-          label: 'R$',
-          data: chartData.custo_por_setor.data,
-          backgroundColor: colors.red,
-          borderWidth: 0
-        }]
-      },
-      options: {
-        ...chartOptions,
-        indexAxis: 'y',
-        plugins: {
-          ...chartOptions.plugins,
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                let label = context.dataset.label || '';
-                if (label) {
-                  label += ': ';
-                }
-                if (context.parsed.x !== null) {
-                  label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
-                    .format(context.parsed.x);
-                }
-                return label;
-              }
-            }
-          }
-        }
-      }
-    });
-  } else {
-    costChartContainer.innerHTML = '<div class="chart-placeholder">Sem dados suficientes para gerar este gráfico</div>';
+} else {
+  cidCtx.canvas.parentNode.innerHTML = '<div class="chart-placeholder">Sem dados suficientes para gerar este gráfico</div>';
+}
+const genderCountCtx = document.getElementById('genderCountChart').getContext('2d');
+new Chart(genderCountCtx, { type: 'pie', data: { labels: chartData.genero.labels, datasets: [{ data: chartData.genero.count, backgroundColor: [colors.blue, colors.purple, colors.gray], borderWidth: 0 }] }, options: { plugins: { legend: { display: true, position: 'bottom', labels: { color: colors.text, font: { size: 9 }, boxWidth: 10, padding: 5 } }, tooltip: { callbacks: { label: function(tooltipItem) { const total = tooltipItem.dataset.data.reduce((acc, data) => acc + data, 0); const currentValue = tooltipItem.dataset.data[tooltipItem.dataIndex]; const percentage = ((currentValue / total) * 100).toFixed(1); return `${chartData.genero.labels[tooltipItem.dataIndex]}: ${currentValue} (${percentage}%)`; } } } } } });
+const genderDaysCtx = document.getElementById('genderDaysChart').getContext('2d');
+new Chart(genderDaysCtx, { type: 'pie', data: { labels: chartData.genero.labels, datasets: [{ data: chartData.genero.dias, backgroundColor: [colors.blue, colors.purple, colors.gray], borderWidth: 0 }] }, options: { plugins: { legend: { display: true, position: 'bottom', labels: { color: colors.text, font: { size: 9 }, boxWidth: 10, padding: 5 } }, tooltip: { callbacks: { label: function(tooltipItem) { const total = tooltipItem.dataset.data.reduce((acc, data) => acc + data, 0); const currentValue = tooltipItem.dataset.data[tooltipItem.dataIndex]; const percentage = ((currentValue / total) * 100).toFixed(1); return `${chartData.genero.labels[tooltipItem.dataIndex]}: ${currentValue} dias (${percentage}%)`; } } } } } });
+function createHexbinChart() {
+  const ageCidData = chartData.age_cid_correlation.data;
+  if (!ageCidData || !ageCidData.length) {
+    document.getElementById('hexbinChart').innerHTML = "<div class='flex items-center justify-center h-full text-white/70'>Dados insuficientes para gerar o gráfico de correlação</div>";
+    return;
   }
-  
-  function createHexbinChart() {
-    const ageCidData = chartData.age_cid_correlation.data;
-    if (!ageCidData || ageCidData.length === 0) {
-      document.getElementById('hexbinChart').innerHTML = "<div class='flex items-center justify-center h-full text-white/70'>Dados insuficientes para gerar o gráfico de correlação</div>";
-      return;
-    }
-    
-    const width = document.getElementById('hexbinChart').clientWidth;
-    const height = document.getElementById('hexbinChart').clientHeight;
-    const margin = {top: 40, right: 20, bottom: 50, left: 100};
-    
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-
-    const uniqueAgeRanges = [...new Set(ageCidData.map(d => d.age_range))].sort((a, b) => {
-      const getMinAge = range => parseInt(range.split('-')[0]);
-      return getMinAge(a) - getMinAge(b);
-    });
-    
-    const uniqueCids = [...new Set(ageCidData.map(d => d.cid))];
-    
-    const maxCount = Math.max(...ageCidData.map(d => d.count));
-    
-    const xScale = d3.scaleBand()
-      .domain(uniqueAgeRanges)
-      .range([0, innerWidth])
-      .padding(0.1);
-    
-    const yScale = d3.scaleBand()
-      .domain(uniqueCids)
-      .range([0, innerHeight])
-      .padding(0.1);
-    
-    const colorScale = d3.scaleSequential()
-      .domain([0, maxCount])
-      .interpolator(d3.interpolateBlues);
-    
-    const svg = d3.select('#hexbinChart')
-      .append('svg')
-      .attr('width', width)
-      .attr('height', height);
-    
-    const g = svg.append('g')
-      .attr('transform', `translate(${margin.left}, ${margin.top})`);
-    
-    const cells = g.selectAll('rect')
-      .data(ageCidData)
-      .enter()
-      .append('rect')
-      .attr('x', d => xScale(d.age_range))
-      .attr('y', d => yScale(d.cid))
-      .attr('width', xScale.bandwidth())
-      .attr('height', yScale.bandwidth())
-      .attr('fill', d => colorScale(d.count))
-      .attr('stroke', 'rgba(255, 255, 255, 0.1)')
-      .attr('rx', 2)
-      .attr('ry', 2);
-    
-    g.append('g')
-      .attr('transform', `translate(0, ${innerHeight})`)
-      .call(d3.axisBottom(xScale))
-      .selectAll('text')
-      .attr('fill', 'rgba(255, 255, 255, 0.7)')
-      .attr('transform', 'rotate(-45)')
-      .attr('text-anchor', 'end')
-      .attr('dx', '-.8em')
-      .attr('dy', '.15em');
-    
-    g.append('g')
-      .call(d3.axisLeft(yScale))
-      .selectAll('text')
-      .attr('fill', 'rgba(255, 255, 255, 0.7)')
-      .call(function(text) {
-        text.each(function() {
-          const t = d3.select(this);
-          const words = t.text().split(/\s+/);
-          t.text('');
-          
-          if (words.length > 3) {
-            t.text(words.slice(0, 3).join(' ') + '...');
-          } else {
-            t.text(words.join(' '));
-          }
-        });
-      });
-    
-    g.append('text')
-      .attr('x', innerWidth / 2)
-      .attr('y', innerHeight + margin.bottom - 5)
-      .attr('text-anchor', 'middle')
-      .attr('fill', 'rgba(255, 255, 255, 0.7)')
-      .text('Faixa Etária');
-    
-    g.append('text')
-      .attr('transform', 'rotate(-90)')
-      .attr('x', -innerHeight / 2)
-      .attr('y', -margin.left + 20)
-      .attr('text-anchor', 'middle')
-      .attr('fill', 'rgba(255, 255, 255, 0.7)')
-      .text('Grupo Patológico');
-    
-    const tooltip = d3.select('body')
-      .append('div')
-      .attr('class', 'hexbin-tooltip')
-      .style('opacity', 0);
-    
-    cells.on('mouseover', function(event, d) {
-      tooltip.transition()
-        .duration(200)
-        .style('opacity', 0.9);
-      tooltip.html(`
-        <div><strong>Faixa Etária:</strong> ${d.age_range}</div>
-        <div><strong>Grupo Patológico:</strong> ${d.cid}</div>
-        <div><strong>Frequência:</strong> ${d.count} ocorrências</div>
-        <div><em>Quanto mais escuro o azul, maior a frequência</em></div>
-      `)
-        .style('left', (event.pageX + 10) + 'px')
-        .style('top', (event.pageY - 28) + 'px');
-    })
-    .on('mouseout', function() {
-      tooltip.transition()
-        .duration(500)
-        .style('opacity', 0);
-    });
-    
-    const legendWidth = 20;
-    const legendHeight = innerHeight / 2;
-    
-    const legendScale = d3.scaleSequential()
-      .domain([0, maxCount])
-      .interpolator(d3.interpolateBlues);
-    
-    const defs = svg.append('defs');
-    
-    const linearGradient = defs.append('linearGradient')
-      .attr('id', 'linear-gradient')
-      .attr('x1', '0%')
-      .attr('y1', '100%')
-      .attr('x2', '0%')
-      .attr('y2', '0%');
-    
-    const steps = 10;
-    for (let i = 0; i <= steps; i++) {
-      linearGradient.append('stop')
-        .attr('offset', i / steps)
-        .attr('stop-color', legendScale(maxCount * i / steps));
-    }
-    
-    const legend = svg.append('g')
-      .attr('transform', `translate(${width - margin.right - legendWidth}, ${margin.top})`);
-    
-    legend.append('rect')
-      .attr('width', legendWidth)
-      .attr('height', legendHeight)
-      .style('fill', 'url(#linear-gradient)')
-      .style('stroke', 'rgba(255, 255, 255, 0.1)');
-    
-    const legendAxis = d3.axisRight()
-      .scale(d3.scaleLinear().domain([0, maxCount]).range([legendHeight, 0]))
-      .ticks(5);
-    
-    legend.append('g')
-      .attr('transform', `translate(${legendWidth}, 0)`)
-      .call(legendAxis)
-      .selectAll('text')
-      .attr('fill', 'rgba(255, 255, 255, 0.7)');
-    
-    legend.append('text')
-      .attr('transform', 'rotate(90)')
-      .attr('x', legendHeight / 2)
-      .attr('y', -legendWidth - 10)
-      .attr('text-anchor', 'middle')
-      .attr('fill', 'rgba(255, 255, 255, 0.7)')
-      .attr('font-size', '10px')
-      .text('Frequência de Ocorrências');
-      
-    legend.append('text')
-      .attr('x', legendWidth / 2)
-      .attr('y', legendHeight + 15)
-      .attr('text-anchor', 'middle')
-      .attr('fill', 'rgba(255, 255, 255, 0.7)')
-      .attr('font-size', '8px')
-      .text('Baixa');
-      
-    legend.append('text')
-      .attr('x', legendWidth / 2)
-      .attr('y', -5)
-      .attr('text-anchor', 'middle')
-      .attr('fill', 'rgba(255, 255, 255, 0.7)')
-      .attr('font-size', '8px')
-      .text('Alta');
-  }
-  
-  function setupTooltips() {
-    const tooltip = document.getElementById('tooltip');
-    const infoIcons = document.querySelectorAll('.info-icon');
-    
-    infoIcons.forEach(icon => {
-      icon.addEventListener('mouseenter', (e) => {
-        const tooltipText = e.target.getAttribute('data-tooltip');
-        tooltip.textContent = tooltipText;
-        
-        const iconRect = e.target.getBoundingClientRect();
-        const tooltipWidth = 250;
-        
-        let left = iconRect.left + (iconRect.width / 2) - (tooltipWidth / 2);
-        const top = iconRect.bottom + 8 + window.scrollY;
-        
-        if (left + tooltipWidth > window.innerWidth - 10) {
-          left = window.innerWidth - tooltipWidth - 10;
-        }
-        if (left < 10) {
-          left = 10;
-        }
-        
-        tooltip.style.left = `${left}px`;
-        tooltip.style.top = `${top}px`;
-        tooltip.style.maxWidth = `${tooltipWidth}px`;
-        tooltip.classList.add('visible');
-      });
-      
-      icon.addEventListener('mouseleave', () => {
-        tooltip.classList.remove('visible');
+  const width = document.getElementById('hexbinChart').clientWidth;
+  const height = document.getElementById('hexbinChart').clientHeight;
+  const margin = {top: 40, right: 20, bottom: 50, left: 100};
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
+  const uniqueAgeRanges = [...new Set(ageCidData.map(d => d.age_range))].sort((a, b) => parseInt(a.split('-')[0]) - parseInt(b.split('-')[0]));
+  const uniqueCids = [...new Set(ageCidData.map(d => d.cid))];
+  const maxCount = Math.max(...ageCidData.map(d => d.count));
+  const xScale = d3.scaleBand().domain(uniqueAgeRanges).range([0, innerWidth]).padding(0.1);
+  const yScale = d3.scaleBand().domain(uniqueCids).range([0, innerHeight]).padding(0.1);
+  const colorScale = d3.scaleSequential().domain([0, maxCount]).interpolator(d3.interpolateBlues);
+  const svg = d3.select('#hexbinChart').append('svg').attr('width', width).attr('height', height);
+  const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
+  g.selectAll('rect').data(ageCidData).enter().append('rect')
+    .attr('x', d => xScale(d.age_range))
+    .attr('y', d => yScale(d.cid))
+    .attr('width', xScale.bandwidth())
+    .attr('height', yScale.bandwidth())
+    .attr('fill', d => colorScale(d.count))
+    .attr('stroke', 'rgba(255, 255, 255, 0.1)')
+    .attr('rx', 2)
+    .attr('ry', 2);
+  g.append('g').attr('transform', `translate(0, ${innerHeight})`)
+    .call(d3.axisBottom(xScale))
+    .selectAll('text')
+    .attr('fill', 'rgba(255, 255, 255, 0.7)')
+    .attr('transform', 'rotate(-45)')
+    .attr('text-anchor', 'end')
+    .attr('dx', '-.8em')
+    .attr('dy', '.15em');
+  g.append('g').call(d3.axisLeft(yScale))
+    .selectAll('text')
+    .attr('fill', 'rgba(255, 255, 255, 0.7)')
+    .call(function(text) {
+      text.each(function() {
+        const t = d3.select(this);
+        const words = t.text().split(/\s+/);
+        t.text(words.length > 3 ? words.slice(0, 3).join(' ') + '...' : words.join(' '));
       });
     });
+  // Removidos os textos de legenda dos eixos X e Y
+  const tooltip = d3.select('body').append('div').attr('class', 'hexbin-tooltip').style('opacity', 0);
+  g.selectAll('rect').on('mouseover', function(event, d) {
+    tooltip.transition().duration(200).style('opacity', 0.9);
+    tooltip.html(`<div><strong>Faixa Etária:</strong> ${d.age_range}</div>
+                  <div><strong>Grupo Patológico:</strong> ${d.cid}</div>
+                  <div><strong>Frequência:</strong> ${d.count} ocorrências</div>
+                  <div><em>Quanto mais escuro, maior a frequência</em></div>`)
+      .style('left', (event.pageX + 10) + 'px')
+      .style('top', (event.pageY - 28) + 'px');
+  }).on('mouseout', function() {
+    tooltip.transition().duration(500).style('opacity', 0);
+  });
+  const legendWidth = 20;
+  const legendHeight = innerHeight / 2;
+  const legendScale = d3.scaleSequential().domain([0, maxCount]).interpolator(d3.interpolateBlues);
+  const defs = svg.append('defs');
+  const linearGradient = defs.append('linearGradient').attr('id', 'linear-gradient')
+    .attr('x1', '0%').attr('y1', '100%').attr('x2', '0%').attr('y2', '0%');
+  const steps = 10;
+  for (let i = 0; i <= steps; i++) {
+    linearGradient.append('stop').attr('offset', i / steps).attr('stop-color', legendScale(maxCount * i / steps));
   }
-  
-  window.addEventListener('DOMContentLoaded', () => {
-    createHexbinChart();
-    setupTooltips();
+  const legend = svg.append('g').attr('transform', `translate(${width - margin.right - legendWidth}, ${margin.top})`);
+  legend.append('rect').attr('width', legendWidth).attr('height', legendHeight)
+    .style('fill', 'url(#linear-gradient)').style('stroke', 'rgba(255, 255, 255, 0.1)');
+  const legendAxis = d3.axisRight(d3.scaleLinear().domain([0, maxCount]).range([legendHeight, 0])).ticks(5);
+  legend.append('g').attr('transform', `translate(${legendWidth}, 0)`)
+    .call(legendAxis).selectAll('text').attr('fill', 'rgba(255, 255, 255, 0.7)');
+  legend.append('text').attr('transform', 'rotate(90)')
+    .attr('x', legendHeight / 2).attr('y', -legendWidth - 10)
+    .attr('text-anchor', 'middle').attr('fill', 'rgba(255, 255, 255, 0.7)')
+    .attr('font-size', '10px').text('Frequência de Ocorrências');
+  legend.append('text').attr('x', legendWidth / 2).attr('y', legendHeight + 15)
+    .attr('text-anchor', 'middle').attr('fill', 'rgba(255, 255, 255, 0.7)')
+    .attr('font-size', '8px').text('Baixa');
+  legend.append('text').attr('x', legendWidth / 2).attr('y', -5)
+    .attr('text-anchor', 'middle').attr('fill', 'rgba(255, 255, 255, 0.7)')
+    .attr('font-size', '8px').text('Alta');
+}
+function setupTooltips() {
+  const tooltip = document.getElementById('tooltip');
+  const infoIcons = document.querySelectorAll('.info-icon');
+  infoIcons.forEach(icon => {
+    icon.addEventListener('mouseenter', (e) => {
+      const tooltipText = e.target.getAttribute('data-tooltip');
+      tooltip.textContent = tooltipText;
+      const iconRect = e.target.getBoundingClientRect();
+      const tooltipWidth = 250;
+      let left = iconRect.left + (iconRect.width / 2) - (tooltipWidth / 2);
+      const top = iconRect.bottom + 8 + window.scrollY;
+      if (left + tooltipWidth > window.innerWidth - 10) { left = window.innerWidth - tooltipWidth - 10; }
+      if (left < 10) { left = 10; }
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+      tooltip.style.maxWidth = `${tooltipWidth}px`;
+      tooltip.classList.add('visible');
+    });
+    icon.addEventListener('mouseleave', () => { tooltip.classList.remove('visible'); });
   });
-  
-  window.addEventListener('resize', function() {
-    document.getElementById('hexbinChart').innerHTML = '';
-    createHexbinChart();
-  });
+}
+window.addEventListener('DOMContentLoaded', () => { createHexbinChart(); setupTooltips(); });
+window.addEventListener('resize', function() { document.getElementById('hexbinChart').innerHTML = ''; createHexbinChart(); });
 </script>
 {% endblock %}

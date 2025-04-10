@@ -1,5 +1,5 @@
 from datetime import timedelta, date
-from django.db.models import Count, Sum, Avg, F, Q, Value, IntegerField, CharField, OuterRef, Subquery, Case, When
+from django.db.models import Count, Sum, F, Q, Value, CharField, Case, When
 from django.db.models.functions import ExtractMonth, ExtractWeekDay, ExtractYear, Coalesce
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -7,6 +7,19 @@ from dashboard.models import EmpresaAtivaUsuario
 from absenteismo.models import Absenteismo
 from funcionarios.models import Funcionario
 import json
+from decimal import Decimal
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super(DecimalEncoder, self).default(obj)
+
+def safe_decimal_to_float(value):
+    try:
+        return float(value) if value is not None else 0
+    except (ValueError, TypeError):
+        return 0
 
 @login_required
 def absenteismo(request):
@@ -41,7 +54,6 @@ def absenteismo(request):
         atestados = atestados.filter(SETOR__startswith=grupo)
     if setor:
         atestados = atestados.filter(SETOR=setor)
-    
     if tipo_duracao:
         if tipo_duracao == "horas":
             atestados = atestados.filter(TIPO_ATESTADO=1)
@@ -68,9 +80,7 @@ def absenteismo(request):
     total_horas_afastadas = total_dias * 8
     impacto_financeiro = total_horas_afastadas * VALOR_HORA
 
-    bradford = atestados.values(
-        'MATRICULA_FUNC', 'NOME_FUNCIONARIO'
-    ).annotate(
+    bradford = atestados.values('MATRICULA_FUNC', 'NOME_FUNCIONARIO').annotate(
         episodios=Count('id'),
         total_dias=Coalesce(Sum('DIAS_AFASTADOS'), 0)
     ).annotate(
@@ -82,14 +92,13 @@ def absenteismo(request):
             output_field=CharField()
         )
     ).order_by('-bradford')
-
     bradford_critico_count = bradford.filter(risco='ALTO').count()
 
     funcionarios_com_atestados = atestados.values('funcionario').annotate(count=Count('id'))
     funcionarios_com_reincidencia = funcionarios_com_atestados.filter(count__gt=1).count()
     taxa_reincidencia = (funcionarios_com_reincidencia / funcionarios_com_atestados.count() * 100) if funcionarios_com_atestados.count() else 0
 
-    dias_uteis = int(dias_periodo * 5/7)
+    dias_uteis = int(dias_periodo * 5 / 7)
     taxa_absenteismo = (total_dias / (total_funcionarios * dias_uteis) * 100) if total_funcionarios and dias_uteis else 0
 
     duracao_patterns = atestados.aggregate(
@@ -106,25 +115,19 @@ def absenteismo(request):
         count=Count('id')
     ).order_by('dia_semana')
 
-    impacto_por_cid = atestados.values('GRUPO_PATOLOGICO').exclude(
-        GRUPO_PATOLOGICO=''
-    ).annotate(
-        dias=Coalesce(Sum('DIAS_AFASTADOS'), 0),
-        horas=Count('id', filter=Q(TIPO_ATESTADO=1)) * 4,
-        impacto=((F('dias') * 8) + F('horas')) * VALOR_HORA
-    ).order_by('-impacto')[:10]
-
     absenteismo_por_setor = atestados.values('SETOR').annotate(
         count=Count('id'),
         dias=Coalesce(Sum('DIAS_AFASTADOS'), 0)
     ).order_by('-dias')[:10]
 
-    absenteismo_por_cid = atestados.values('CID_PRINCIPAL', 'DESCRICAO_CID').exclude(
-        CID_PRINCIPAL=''
+    absenteismo_por_cid = list(atestados.values('CID_PRINCIPAL', 'DESCRICAO_CID').exclude(
+        CID_PRINCIPAL__isnull=True
     ).annotate(
         count=Count('id'),
         dias=Coalesce(Sum('DIAS_AFASTADOS'), 0)
-    ).order_by('-count')[:10]
+    ).order_by('-count')[:10])
+    if not absenteismo_por_cid:
+        absenteismo_por_cid = [{'CID_PRINCIPAL': 'Sem dados', 'DESCRICAO_CID': '', 'count': 0, 'dias': 0}]
 
     evolucao_mensal = atestados.annotate(
         mes=ExtractMonth('DT_INICIO_ATESTADO'),
@@ -146,15 +149,8 @@ def absenteismo(request):
         ).values('GRUPO_PATOLOGICO').annotate(
             count=Count('id')
         ).order_by('-count')[:5]
-        
         if list(top_cids):
             cids_por_genero[sexo_nome] = list(top_cids)
-
-    custo_por_setor = atestados.values('SETOR').annotate(
-        dias=Coalesce(Sum('DIAS_AFASTADOS'), 0),
-        horas=Count('id', filter=Q(TIPO_ATESTADO=1)) * 4,
-        custo=((F('dias') * 8) + F('horas')) * VALOR_HORA
-    ).order_by('-custo')[:10]
 
     cids_por_prefixo_setor = {}
     setor_prefixos = ['F', 'M', 'S', 'T']
@@ -164,7 +160,6 @@ def absenteismo(request):
         ).values('GRUPO_PATOLOGICO').annotate(
             count=Count('id')
         ).order_by('-count')[:5]
-        
         if list(top_cids):
             cids_por_prefixo_setor[prefixo] = list(top_cids)
 
@@ -176,12 +171,10 @@ def absenteismo(request):
         (46, 55, "46-55"),
         (56, 100, "56+"),
     ]
-    
     for min_age, max_age, label in age_ranges:
         today = date.today()
         min_date = date(today.year - max_age, today.month, today.day)
         max_date = date(today.year - min_age, today.month, today.day)
-        
         age_cids = atestados.filter(
             funcionario__DATA_NASCIMENTO__gte=min_date,
             funcionario__DATA_NASCIMENTO__lte=max_date
@@ -190,7 +183,6 @@ def absenteismo(request):
         ).values('GRUPO_PATOLOGICO').annotate(
             count=Count('id')
         ).order_by('-count')[:3]
-        
         for cid in age_cids:
             age_cid_correlation.append({
                 "age_range": label,
@@ -201,10 +193,12 @@ def absenteismo(request):
     def safe_cid_label(item):
         cid = item.get('CID_PRINCIPAL', '')
         desc = item.get('DESCRICAO_CID', '')
+        if not cid and not desc:
+            return "Não classificado"
         if not desc:
             return cid
         return f"{cid} - {desc[:20]}"
-    
+
     chart_data = {
         'duracao_patterns': {
             'labels': ['Horas', '1-3 dias', '4-7 dias', '8-14 dias', '15+ dias'],
@@ -220,10 +214,6 @@ def absenteismo(request):
             'labels': ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
             'data': [0, 0, 0, 0, 0, 0, 0]
         },
-        'impacto_por_cid': {
-            'labels': [item['GRUPO_PATOLOGICO'] for item in impacto_por_cid],
-            'data': [float(item['impacto']) for item in impacto_por_cid]
-        },
         'absenteismo_por_setor': {
             'labels': [item['SETOR'] for item in absenteismo_por_setor],
             'data_count': [item['count'] for item in absenteismo_por_setor],
@@ -231,8 +221,8 @@ def absenteismo(request):
         },
         'absenteismo_por_cid': {
             'labels': [safe_cid_label(item) for item in absenteismo_por_cid],
-            'data_count': [item['count'] for item in absenteismo_por_cid],
-            'data_dias': [item['dias'] for item in absenteismo_por_cid]
+            'data_count': [item.get('count', 0) for item in absenteismo_por_cid],
+            'data_dias': [item.get('dias', 0) for item in absenteismo_por_cid]
         },
         'evolucao_mensal': {
             'labels': [],
@@ -243,10 +233,6 @@ def absenteismo(request):
             'labels': ['Masculino', 'Feminino', 'Não informado'],
             'count': [0, 0, 0],
             'dias': [0, 0, 0]
-        },
-        'custo_por_setor': {
-            'labels': [item['SETOR'] for item in custo_por_setor],
-            'data': [float(item['custo']) for item in custo_por_setor]
         },
         'age_cid_correlation': {
             'data': age_cid_correlation
@@ -277,13 +263,13 @@ def absenteismo(request):
             chart_data['genero']['dias'][2] = item['dias']
 
     context = {
+        "absenteismo_por_cid": absenteismo_por_cid,
         "empresa_ativa": empresa_ativa,
         "periodo": periodo,
         "grupo": grupo,
         "tipo_duracao": tipo_duracao,
         "setor": setor,
         "setores": setores,
-        
         "total_funcionarios": total_funcionarios,
         "total_atestados": total_atestados,
         "total_dias": total_dias,
@@ -293,12 +279,10 @@ def absenteismo(request):
         "bradford_critico_count": bradford_critico_count,
         "taxa_reincidencia": taxa_reincidencia,
         "taxa_absenteismo": taxa_absenteismo,
-        
         "bradford_detalhado": bradford[:20],
         "cids_por_genero": cids_por_genero,
         "cids_por_prefixo_setor": cids_por_prefixo_setor,
-        
-        "chart_data": json.dumps(chart_data),
+        "chart_data": json.dumps(chart_data, cls=DecimalEncoder),
         "sexo_choices": dict(Absenteismo.SEXO_CHOICES)
     }
     
