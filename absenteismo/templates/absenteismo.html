@@ -562,6 +562,12 @@ const cidOptions = {
 };
 new ApexCharts(document.querySelector("#cidChart"), cidOptions).render();
 
+const generoData = {
+  count: chartData.genero.count.map(val => parseInt(val) || 0),
+  dias: chartData.genero.dias.map(val => parseInt(val) || 0),
+  labels: chartData.genero.labels
+};
+
 const genderCountChart = {
   chart: { 
     id: 'gender-count-chart',
@@ -597,8 +603,8 @@ const genderCountChart = {
     animations: { enabled: true, easing: 'easeinout', speed: 800 }
   },
   colors: ['#3498db', '#9b59b6', 'rgba(149, 165, 166, 0.8)'],
-  series: chartData.genero.count,
-  labels: chartData.genero.labels,
+  series: generoData.count,
+  labels: generoData.labels,
   theme: { mode: 'dark' },
   legend: {
     position: 'bottom',
@@ -610,25 +616,17 @@ const genderCountChart = {
   tooltip: {
     enabled: true,
     theme: 'dark',
-    custom: function({series, seriesIndex, dataPointIndex, w}) {
-      const label = w.globals.labels[dataPointIndex];
-      const value = w.globals.seriesTotals[dataPointIndex];
-      const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-      const percentage = ((value / total) * 100).toFixed(1);
-      
-      return `<div class="p-3 bg-[#002844] rounded border border-white/10 shadow-lg">
-        <div class="text-white font-medium mb-2">Gênero: ${label}</div>
-        <div class="text-white/80 mb-1">Atestados: <span class="font-bold">${Math.round(value)}</span> (${percentage}% do total)</div>
-        <div class="text-white/70 text-xs mt-2">
-          <p>Análise por gênero:</p>
-          <ul class="list-disc ml-4 mt-1">
-            <li>Compare com a distribuição de gênero na força de trabalho total</li>
-            <li>Analise junto ao gráfico de dias para entender duração média</li>
-            <li>Considere fatores biológicos e ocupacionais específicos para cada gênero</li>
-            <li>Identifique necessidades de programas de saúde direcionados</li>
-          </ul>
-        </div>
-      </div>`;
+    y: {
+      formatter: function(value) {
+        return value;
+      }
+    }
+  },
+  plotOptions: {
+    pie: {
+      dataLabels: {
+        offset: -10
+      }
     }
   },
   responsive: [{
@@ -636,7 +634,6 @@ const genderCountChart = {
     options: { legend: { position: 'bottom' } }
   }]
 };
-new ApexCharts(document.querySelector("#genderCountChart"), genderCountChart).render();
 
 const genderDaysChart = {
   chart: { 
@@ -673,8 +670,8 @@ const genderDaysChart = {
     animations: { enabled: true, easing: 'easeinout', speed: 800 }
   },
   colors: ['#3498db', '#9b59b6', 'rgba(149, 165, 166, 0.8)'],
-  series: chartData.genero.dias,
-  labels: chartData.genero.labels,
+  series: generoData.dias,
+  labels: generoData.labels,
   theme: { mode: 'dark' },
   legend: {
     position: 'bottom',
@@ -686,30 +683,17 @@ const genderDaysChart = {
   tooltip: {
     enabled: true,
     theme: 'dark',
-    custom: function({series, seriesIndex, dataPointIndex, w}) {
-      const label = w.globals.labels[dataPointIndex];
-      const value = w.globals.seriesTotals[dataPointIndex];
-      const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-      const percentage = ((value / total) * 100).toFixed(1);
-      
-      const atestadosGenero = chartData.genero.count[dataPointIndex];
-      const diasGenero = chartData.genero.dias[dataPointIndex];
-      const mediaDiasGenero = diasGenero / atestadosGenero;
-      
-      return `<div class="p-3 bg-[#002844] rounded border border-white/10 shadow-lg">
-        <div class="text-white font-medium mb-2">Gênero: ${label}</div>
-        <div class="text-white/80 mb-1">Dias Afastados: <span class="font-bold">${Math.round(value)}</span> (${percentage}% do total)</div>
-        <div class="text-white/80 mb-1">Média Dias/Atestado: <span class="font-bold">${mediaDiasGenero.toFixed(1)}</span></div>
-        <div class="text-white/70 text-xs mt-2">
-          <p>Insights importantes:</p>
-          <ul class="list-disc ml-4 mt-1">
-            <li>Compare com o gráfico de atestados para avaliar duração média por gênero</li>
-            <li>Diferenças significativas podem indicar tipos distintos de condições de saúde</li>
-            <li>Alta média de dias pode sugerir condições mais graves ou crônicas</li>
-            <li>Analise também faixa etária e funções predominantes de cada gênero</li>
-          </ul>
-        </div>
-      </div>`;
+    y: {
+      formatter: function(value) {
+        return value;
+      }
+    }
+  },
+  plotOptions: {
+    pie: {
+      dataLabels: {
+        offset: -10
+      }
     }
   },
   responsive: [{
@@ -717,7 +701,102 @@ const genderDaysChart = {
     options: { legend: { position: 'bottom' } }
   }]
 };
-new ApexCharts(document.querySelector("#genderDaysChart"), genderDaysChart).render();
+
+function inicializarGraficosGenero() {
+  if (document.querySelector("#genderCountChart")) {
+    new ApexCharts(document.querySelector("#genderCountChart"), genderCountChart).render();
+  }
+  
+  if (document.querySelector("#genderDaysChart")) {
+    new ApexCharts(document.querySelector("#genderDaysChart"), genderDaysChart).render();
+  }
+  
+  const genderChartContainers = document.querySelectorAll("#genderCountChart, #genderDaysChart");
+  
+  genderChartContainers.forEach(container => {
+    container.addEventListener('mouseenter', function() {
+      const charts = {
+        "#genderCountChart": {
+          title: "Distribuição de Atestados por Gênero",
+          data: generoData.count,
+          type: "atestados"
+        },
+        "#genderDaysChart": {
+          title: "Dias Afastados por Gênero",
+          data: generoData.dias,
+          type: "dias"
+        }
+      };
+      
+      const chartInfo = charts[`#${this.id}`];
+      if (!chartInfo) return;
+      
+      const tooltipElement = document.createElement('div');
+      tooltipElement.className = 'hexbin-tooltip';
+      tooltipElement.style.display = 'none';
+      document.body.appendChild(tooltipElement);
+      
+      const rect = this.getBoundingClientRect();
+      const total = chartInfo.data.reduce((a, b) => a + b, 0);
+      
+      let tooltipContent = `<div class="p-3">
+        <div class="font-medium mb-2">${chartInfo.title}</div>
+        <table class="w-full text-sm">
+          <thead>
+            <tr>
+              <th class="text-left pr-3">Gênero</th>
+              <th class="text-right pr-3">${chartInfo.type === "atestados" ? "Atestados" : "Dias"}</th>
+              <th class="text-right">%</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      
+      generoData.labels.forEach((label, i) => {
+        const value = chartInfo.data[i] || 0;
+        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
+        
+        tooltipContent += `<tr>
+          <td class="text-left pr-3">${label}</td>
+          <td class="text-right pr-3">${value}</td>
+          <td class="text-right">${percentage}%</td>
+        </tr>`;
+      });
+      
+      tooltipContent += `</tbody></table>`;
+      
+      if (chartInfo.type === "atestados") {
+        tooltipContent += `<div class="text-xs mt-2">
+          <p>Análise por gênero:</p>
+          <ul class="list-disc ml-4 mt-1">
+            <li>Compare com distribuição na força de trabalho</li>
+            <li>Analise junto ao gráfico de dias</li>
+            <li>Identifique necessidades de programas específicos</li>
+          </ul>
+        </div>`;
+      } else {
+        tooltipContent += `<div class="text-xs mt-2">
+          <p>Insights importantes:</p>
+          <ul class="list-disc ml-4 mt-1">
+            <li>Compare duração média entre gêneros</li>
+            <li>Diferenças podem indicar tipos distintos de condições</li>
+            <li>Alta média de dias sugere condições mais graves</li>
+          </ul>
+        </div>`;
+      }
+      
+      tooltipContent += `</div>`;
+      
+      tooltipElement.innerHTML = tooltipContent;
+      tooltipElement.style.display = 'block';
+      tooltipElement.style.left = `${rect.right + 10}px`;
+      tooltipElement.style.top = `${rect.top}px`;
+      
+      this.addEventListener('mouseleave', function() {
+        tooltipElement.remove();
+      }, { once: true });
+    });
+  });
+}
 
 let radarSeries = [];
 let patologias = [];
@@ -936,6 +1015,7 @@ function setupTooltips() {
 
 document.addEventListener('DOMContentLoaded', function() {
   setupTooltips();
+  inicializarGraficosGenero();
 });
 </script>
 {% endblock %}
