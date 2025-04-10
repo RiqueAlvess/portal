@@ -4,7 +4,7 @@
 {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <style>
-html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh; }
+html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh; background-image: linear-gradient(135deg, #002844 0%, #00325A 100%); }
 .hexbin-tooltip { position: absolute; background: rgba(0, 50, 90, 0.9); color: white; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 4px; padding: 8px; font-size: 12px; pointer-events: none; z-index: 100; max-width: 200px; }
 .info-icon { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.7); font-size: 12px; font-weight: bold; cursor: help; margin-left: 6px; transition: all 0.2s ease; }
 .info-icon:hover { background-color: rgba(255, 255, 255, 0.3); }
@@ -15,10 +15,23 @@ html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh
 {% endblock %}
 
 {% block body %}
-<div class="px-10 py-12 bg-[#00325A] min-h-screen w-full">
+<div class="px-10 py-12 min-h-screen w-full">
   <div class="max-w-7xl mx-auto">
-    <h1 class="text-2xl font-bold text-white mb-8">Absenteísmo - {{ empresa_ativa.RAZAOSOCIAL }}</h1>
-    <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-10">
+    <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-8 backdrop-blur-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 class="text-2xl sm:text-3xl font-bold text-white">Absenteísmo - {{ empresa_ativa.RAZAOSOCIAL }}</h1>
+        <div class="text-white/60 text-sm bg-white/5 px-4 py-2 rounded-lg border border-white/10">
+          <span class="inline-block mr-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </span>
+          Data atual: {% now "d/m/Y" %}
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-10 backdrop-blur-sm">
       <form method="get" class="flex flex-wrap gap-4 items-end">
         <div>
           <label class="text-white/70 text-sm">Período</label>
@@ -61,71 +74,71 @@ html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh
       </form>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-1">Bradford Crítico <span class="info-icon" data-tooltip="Indicador que mede o impacto disruptivo das ausências curtas e frequentes. Valores acima de 500 indicam padrões de absenteísmo altamente prejudiciais à operação, exigindo intervenção imediata da gestão.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ bradford_critico_count }}</p>
       </div>
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-1">Impacto Financeiro <span class="info-icon" data-tooltip="Representa o custo direto das horas perdidas devido aos afastamentos. Calculado com base no valor/hora médio da empresa, não inclui custos indiretos como perda de produtividade ou substituição de pessoal.">i</span></h3>
         <p class="text-3xl font-bold text-white">R$ {{ impacto_financeiro|floatformat:2 }}</p>
       </div>
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-1">Taxa de Reincidência <span class="info-icon" data-tooltip="Percentual de colaboradores que apresentaram 2 ou mais atestados no período analisado. Valores altos podem indicar problemas crônicos de saúde na equipe ou possíveis abusos do sistema de afastamento.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ taxa_reincidencia|floatformat:1 }}%</p>
       </div>
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-1">Taxa de Absenteísmo <span class="info-icon" data-tooltip="Percentual de dias úteis perdidos em relação ao total de dias úteis no período. Valores acima de 3% são considerados preocupantes na maioria dos setores industriais, exigindo análise mais detalhada das causas.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ taxa_absenteismo|floatformat:2 }}%</p>
       </div>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-1">Total de Funcionários <span class="info-icon" data-tooltip="Número total de colaboradores ativos no período analisado. Serve como base para os cálculos percentuais e de taxas de absenteísmo, permitindo a normalização dos dados para comparações justas.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ total_funcionarios }}</p>
       </div>
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-1">Total de Atestados <span class="info-icon" data-tooltip="Quantidade absoluta de episódios de afastamento registrados no período. Um mesmo funcionário pode ter múltiplos episódios, impactando significativamente a operação devido às interrupções frequentes.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ total_atestados }}</p>
       </div>
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-1">Média de Dias por Atestado <span class="info-icon" data-tooltip="Duração média de cada episódio de afastamento. Valores baixos com alta frequência podem indicar absenteísmo de curta duração, que costuma ser mais disruptivo que afastamentos longos e planejados.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ media_dias|floatformat:1 }}</p>
       </div>
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-1">Média de Atestados <span class="info-icon" data-tooltip="Número médio de atestados por funcionário no período. Este indicador ajuda a identificar se o absenteísmo está distribuído entre muitos colaboradores ou concentrado em poucos, orientando estratégias de intervenção.">i</span></h3>
         <p class="text-3xl font-bold text-white">{{ media_atestados|floatformat:2 }}</p>
       </div>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/8 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-4">Análise de Padrões por Duração <span class="info-icon" data-tooltip="Este gráfico revela a distribuição dos atestados por tempo de afastamento. Picos em categorias específicas podem indicar tendências a investigar: alta ocorrência de atestados de horas pode sugerir problemas pontuais como consultas médicas, enquanto concentração em 15+ dias pode indicar condições mais graves.">i</span></h3>
         <div id="durationChart" class="h-64"></div>
       </div>
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/8 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-4">Distribuição por Dia da Semana <span class="info-icon" data-tooltip="Analisa a frequência de atestados por dia da semana, ajudando a identificar padrões suspeitos. Picos em segundas e sextas-feiras, por exemplo, podem indicar possível abuso do sistema de afastamento para prolongar finais de semana, enquanto distribuição equilibrada sugere ocorrências naturais.">i</span></h3>
         <div id="weekdayChart" class="h-64"></div>
       </div>
     </div>
 
     <div class="mb-10">
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/8 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-4">Evolução do Absenteísmo por Mês <span class="info-icon" data-tooltip="Mostra a tendência de atestados e dias perdidos ao longo do tempo. Permite identificar padrões sazonais, como aumento de afastamentos em períodos específicos (inverno, fim de ano), ou avaliar o impacto de ações implementadas, como programas de saúde ocupacional ou mudanças na política de atestados.">i</span></h3>
         <div id="evolutionChart" class="h-64"></div>
       </div>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/8 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-4">Absenteísmo por Setor (Top 10) <span class="info-icon" data-tooltip="Identifica os setores mais afetados pelo absenteísmo, tanto em número de ocorrências quanto em dias perdidos. Setores com valores desproporcionalmente altos podem indicar problemas específicos como condições de trabalho inadequadas, liderança ineficaz ou riscos ocupacionais que precisam ser investigados.">i</span></h3>
         <div id="sectorChart" class="h-64"></div>
       </div>
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/8 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-4">Absenteísmo por Causa (CID) <span class="info-icon" data-tooltip="Apresenta as principais causas de afastamento conforme a Classificação Internacional de Doenças (CID). Permite direcionar programas de prevenção e saúde ocupacional para as condições mais prevalentes, além de identificar possíveis riscos ocupacionais específicos que estejam causando determinadas patologias.">i</span></h3>
         <div id="cidChart" class="h-64"></div>
       </div>
     </div>
 
     <div class="mb-10">
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/8 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-4">
           Absenteísmo por Gênero <span class="info-icon" data-tooltip="Compara a distribuição de atestados e dias de afastamento entre os gêneros. Disparidades significativas podem refletir questões específicas como licenças maternidade/paternidade, diferenças nas funções desempenhadas ou fatores culturais/comportamentais relacionados à saúde que afetam cada gênero de forma distinta.">i</span>
         </h3>
@@ -142,12 +155,12 @@ html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh
       </div>
     </div>    
     
-    <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-10">
+    <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-10 backdrop-blur-sm hover:bg-white/8 transition-all duration-300">
       <h3 class="text-sm text-white/70 mb-4">Correlação Idade vs. Patologia (Radar) <span class="info-icon" data-tooltip="Visualiza a distribuição de patologias entre diferentes faixas etárias. O formato radar permite identificar rapidamente quais condições de saúde afetam mais cada grupo etário. Padrões específicos podem guiar programas de prevenção direcionados, como campanhas de conscientização sobre doenças cardiovasculares para faixas etárias mais elevadas ou ergonomia para grupos mais jovens com alta incidência de problemas musculoesqueléticos.">i</span></h3>
       <div id="heatmapChart" class="h-96"></div>
       <div class="text-xs text-white/60 mt-2 text-center">Maiores valores indicam maior frequência na faixa etária</div>
     </div>
-    <div class="bg-white/5 border border-white/10 rounded-2xl shadow-xl overflow-hidden mb-10">
+    <div class="bg-white/5 border border-white/10 rounded-2xl shadow-xl overflow-hidden mb-10 backdrop-blur-sm">
       <div class="p-6 bg-[#002844]">
         <h2 class="text-xl text-white font-semibold mb-1">Bradford Factor: Impacto Disruptivo <span class="info-icon" data-tooltip="O Bradford Factor é uma fórmula que destaca o impacto negativo de ausências curtas e frequentes (SxSxD, onde S=número de episódios e D=dias totais). Funcionários com índice Bradford elevado causam maior disrupção operacional e merecem atenção especial da gestão, seja para suporte de saúde ou investigação de possíveis abusos.">i</span></h2>
         <p class="text-white/60 text-sm">Os 20 funcionários com maior índice de Bradford</p>
@@ -189,7 +202,7 @@ html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
       {% for sexo_nome, cids in cids_por_genero.items %}
-      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/8 transition-all duration-300">
         <h3 class="text-sm text-white/70 mb-4">Principais CIDs - {{ sexo_nome }} <span class="info-icon" data-tooltip="Apresenta os 5 grupos patológicos mais frequentes para o gênero {{ sexo_nome }}. A análise por gênero permite identificar condições de saúde específicas que afetam desproporcionalmente cada grupo, possibilitando o desenvolvimento de programas de saúde ocupacional mais direcionados e eficazes.">i</span></h3>
         <div class="overflow-x-auto">
           <table class="w-full border-collapse">
@@ -218,11 +231,11 @@ html, body { margin: 0; padding: 0; background-color: #00325A; min-height: 100vh
       </div>
       {% endfor %}
     </div>
-    <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-10">
+    <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-10 backdrop-blur-sm hover:bg-white/8 transition-all duration-300">
       <h3 class="text-sm text-white/70 mb-4">Distribuição de CIDs por Grupo <span class="info-icon" data-tooltip="Analisa as principais patologias em cada grupo operacional (F, M, S, T). Permite identificar problemas de saúde específicos relacionados às diferentes funções ou ambientes de trabalho. Por exemplo, alta incidência de problemas respiratórios em um determinado grupo pode sugerir exposição a agentes irritantes ou condições inadequadas naquela área.">i</span></h3>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {% for prefixo, cids in cids_por_prefixo_setor.items %}
-        <div>
+        <div class="bg-white/5 rounded-lg p-4 border border-white/10 shadow-lg backdrop-blur-sm hover:bg-white/8 transition-all duration-300">
           <h4 class="font-semibold text-white mb-2">Grupo {{ prefixo }}</h4>
           <div class="overflow-x-auto">
             <table class="w-full border-collapse">
@@ -281,8 +294,7 @@ const commonOptions = {
         zoomin: true,
         zoomout: true,
         pan: true,
-        reset: true,
-        customIcons: []
+        reset: true
       },
       export: {
         csv: {
@@ -342,13 +354,28 @@ const durationOptions = {
   legend: { show: false },
   dataLabels: { enabled: false },
   tooltip: {
+    enabled: true,
     theme: 'dark',
-    y: {
-      formatter: function(value) {
-        const total = chartData.duracao_patterns.data.reduce((a, b) => a + b, 0);
-        const percentage = ((value / total) * 100).toFixed(1);
-        return `${value} (${percentage}% do total)`;
-      }
+    shared: false,
+    intersect: false,
+    custom: function({series, seriesIndex, dataPointIndex, w}) {
+      const value = series[seriesIndex][dataPointIndex];
+      const category = w.globals.labels[dataPointIndex];
+      const total = chartData.duracao_patterns.data.reduce((a, b) => a + b, 0);
+      const percentage = ((value / total) * 100).toFixed(1);
+      
+      return `<div class="p-3 bg-[#002844] rounded border border-white/10 shadow-lg">
+        <div class="text-white font-medium mb-1">${category}</div>
+        <div class="text-white/80 mb-1">Quantidade: <span class="font-bold">${value}</span> (${percentage}% do total)</div>
+        <div class="text-white/70 text-xs mt-2">
+          <p>Analise se há concentração em faixas específicas:</p>
+          <ul class="list-disc ml-4 mt-1">
+            <li>Picos em atestados de horas sugerem questões pontuais</li>
+            <li>Muitos afastamentos de 1-3 dias podem indicar problemas recorrentes</li>
+            <li>Alta frequência de 15+ dias aponta para condições mais graves</li>
+          </ul>
+        </div>
+      </div>`;
     }
   }
 };
@@ -364,13 +391,28 @@ const weekdayOptions = {
   legend: { show: false },
   dataLabels: { enabled: false },
   tooltip: {
+    enabled: true,
     theme: 'dark',
-    y: {
-      formatter: function(value) {
-        const total = chartData.dia_semana.data.reduce((a, b) => a + b, 0);
-        const percentage = ((value / total) * 100).toFixed(1);
-        return `${value} (${percentage}% do total)`;
-      }
+    shared: false,
+    intersect: false,
+    custom: function({series, seriesIndex, dataPointIndex, w}) {
+      const value = series[seriesIndex][dataPointIndex];
+      const day = w.globals.labels[dataPointIndex];
+      const total = chartData.dia_semana.data.reduce((a, b) => a + b, 0);
+      const percentage = ((value / total) * 100).toFixed(1);
+      
+      return `<div class="p-3 bg-[#002844] rounded border border-white/10 shadow-lg">
+        <div class="text-white font-medium mb-1">${day}</div>
+        <div class="text-white/80 mb-1">Quantidade: <span class="font-bold">${value}</span> (${percentage}% do total)</div>
+        <div class="text-white/70 text-xs mt-2">
+          <p>Padrões a observar:</p>
+          <ul class="list-disc ml-4 mt-1">
+            <li>Concentração em segundas/sextas sugere possível extensão de finais de semana</li>
+            <li>Picos em dias específicos podem indicar fatores operacionais</li>
+            <li>Distribuição equilibrada indica ocorrências naturais de saúde</li>
+          </ul>
+        </div>
+      </div>`;
     }
   }
 };
@@ -393,7 +435,34 @@ const evolutionOptions = {
     }
   },
   stroke: { curve: 'smooth', width: [3, 3] },
-  markers: { size: 4, strokeWidth: 0, hover: { size: 6 } }
+  markers: { size: 4, strokeWidth: 0, hover: { size: 6 } },
+  tooltip: {
+    enabled: true,
+    theme: 'dark',
+    shared: true,
+    intersect: false,
+    custom: function({series, seriesIndex, dataPointIndex, w}) {
+      const month = w.globals.labels[dataPointIndex];
+      const atestados = series[0][dataPointIndex];
+      const dias = series[1][dataPointIndex];
+      const mediaAtestado = dias / atestados;
+      
+      return `<div class="p-3 bg-[#002844] rounded border border-white/10 shadow-lg">
+        <div class="text-white font-medium mb-2">${month}</div>
+        <div class="text-white/80 mb-1">Atestados: <span class="font-bold">${atestados}</span></div>
+        <div class="text-white/80 mb-1">Dias Afastados: <span class="font-bold">${dias}</span></div>
+        <div class="text-white/80 mb-1">Média Dias/Atestado: <span class="font-bold">${mediaAtestado.toFixed(1)}</span></div>
+        <div class="text-white/70 text-xs mt-2">
+          <p>Análise de tendências:</p>
+          <ul class="list-disc ml-4 mt-1">
+            <li>Observe padrões sazonais (inverno, férias, etc.)</li>
+            <li>Picos podem estar associados a epidemias ou mudanças organizacionais</li>
+            <li>Diferenças entre linhas indicam variação na duração média dos atestados</li>
+          </ul>
+        </div>
+      </div>`;
+    }
+  }
 };
 new ApexCharts(document.querySelector("#evolutionChart"), evolutionOptions).render();
 
@@ -409,7 +478,39 @@ const sectorOptions = {
   plotOptions: {
     bar: { horizontal: true, dataLabels: { position: 'top' }, borderRadius: 4, columnWidth: '70%' }
   },
-  dataLabels: { enabled: false }
+  dataLabels: { enabled: false },
+  tooltip: {
+    enabled: true,
+    theme: 'dark',
+    shared: true,
+    intersect: false,
+    custom: function({series, seriesIndex, dataPointIndex, w}) {
+      const setor = w.globals.labels[dataPointIndex];
+      const dias = series[0][dataPointIndex];
+      const quantidade = series[1][dataPointIndex];
+      const mediaSetor = dias / quantidade;
+      
+      const totalDias = chartData.absenteismo_por_setor.data_dias.reduce((a, b) => a + b, 0);
+      const totalQtd = chartData.absenteismo_por_setor.data_count.reduce((a, b) => a + b, 0);
+      const percDias = ((dias / totalDias) * 100).toFixed(1);
+      const percQtd = ((quantidade / totalQtd) * 100).toFixed(1);
+      
+      return `<div class="p-3 bg-[#002844] rounded border border-white/10 shadow-lg">
+        <div class="text-white font-medium mb-2">Setor: ${setor}</div>
+        <div class="text-white/80 mb-1">Dias Afastados: <span class="font-bold">${dias}</span> (${percDias}% do total)</div>
+        <div class="text-white/80 mb-1">Quantidade: <span class="font-bold">${quantidade}</span> (${percQtd}% do total)</div>
+        <div class="text-white/80 mb-1">Média Dias/Atestado: <span class="font-bold">${mediaSetor.toFixed(1)}</span></div>
+        <div class="text-white/70 text-xs mt-2">
+          <p>Análise do setor:</p>
+          <ul class="list-disc ml-4 mt-1">
+            <li>Setores com barras de dias > quantidade têm afastamentos mais longos</li>
+            <li>Proporção desequilibrada pode indicar problemas específicos do setor</li>
+            <li>Considere fatores como tamanho da equipe, tipo de trabalho e riscos específicos</li>
+          </ul>
+        </div>
+      </div>`;
+    }
+  }
 };
 new ApexCharts(document.querySelector("#sectorChart"), sectorOptions).render();
 
@@ -425,12 +526,45 @@ const cidOptions = {
   plotOptions: {
     bar: { horizontal: true, dataLabels: { position: 'top' }, borderRadius: 4, columnWidth: '70%' }
   },
-  dataLabels: { enabled: false }
+  dataLabels: { enabled: false },
+  tooltip: {
+    enabled: true,
+    theme: 'dark',
+    shared: true,
+    intersect: false,
+    custom: function({series, seriesIndex, dataPointIndex, w}) {
+      const cid = w.globals.labels[dataPointIndex];
+      const quantidade = series[0][dataPointIndex];
+      const dias = series[1][dataPointIndex];
+      const mediaAtestado = dias / quantidade || 0;
+      
+      const totalQtd = chartData.absenteismo_por_cid.data_count.reduce((a, b) => a + parseInt(b||0), 0);
+      const totalDias = chartData.absenteismo_por_cid.data_dias.reduce((a, b) => a + parseInt(b||0), 0);
+      const percQtd = ((quantidade / totalQtd) * 100).toFixed(1);
+      const percDias = ((dias / totalDias) * 100).toFixed(1);
+      
+      return `<div class="p-3 bg-[#002844] rounded border border-white/10 shadow-lg">
+        <div class="text-white font-medium mb-2">CID: ${cid}</div>
+        <div class="text-white/80 mb-1">Quantidade: <span class="font-bold">${quantidade}</span> (${percQtd}% do total)</div>
+        <div class="text-white/80 mb-1">Dias Afastados: <span class="font-bold">${dias}</span> (${percDias}% do total)</div>
+        <div class="text-white/80 mb-1">Média Dias/Atestado: <span class="font-bold">${mediaAtestado.toFixed(1)}</span></div>
+        <div class="text-white/70 text-xs mt-2">
+          <p>Informações importantes:</p>
+          <ul class="list-disc ml-4 mt-1">
+            <li>CIDs com alta frequência podem indicar problemas ambientais ou ocupacionais</li>
+            <li>Patologias com média de dias elevada representam condições mais graves</li>
+            <li>Identifique oportunidades para programas preventivos específicos</li>
+          </ul>
+        </div>
+      </div>`;
+    }
+  }
 };
 new ApexCharts(document.querySelector("#cidChart"), cidOptions).render();
 
-const genderCountOptions = {
+const genderCountChart = {
   chart: { 
+    id: 'gender-count-chart',
     type: 'pie', 
     height: 200,
     background: 'transparent',
@@ -444,6 +578,20 @@ const genderCountOptions = {
         zoomout: false,
         pan: false,
         reset: false
+      },
+      export: {
+        csv: {
+          filename: 'distribuicao-atestados-por-genero',
+          columnDelimiter: ',',
+          headerCategory: 'Gênero',
+          headerValue: 'Atestados'
+        },
+        svg: {
+          filename: 'distribuicao-atestados-por-genero'
+        },
+        png: {
+          filename: 'distribuicao-atestados-por-genero'
+        }
       }
     },
     animations: { enabled: true, easing: 'easeinout', speed: 800 }
@@ -460,11 +608,27 @@ const genderCountOptions = {
     markers: { width: 10, height: 10, radius: 2 }
   },
   tooltip: {
+    enabled: true,
     theme: 'dark',
-    y: {
-      formatter: function(value) {
-        return Math.round(value);
-      }
+    custom: function({series, seriesIndex, dataPointIndex, w}) {
+      const label = w.globals.labels[dataPointIndex];
+      const value = w.globals.seriesTotals[dataPointIndex];
+      const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+      const percentage = ((value / total) * 100).toFixed(1);
+      
+      return `<div class="p-3 bg-[#002844] rounded border border-white/10 shadow-lg">
+        <div class="text-white font-medium mb-2">Gênero: ${label}</div>
+        <div class="text-white/80 mb-1">Atestados: <span class="font-bold">${Math.round(value)}</span> (${percentage}% do total)</div>
+        <div class="text-white/70 text-xs mt-2">
+          <p>Análise por gênero:</p>
+          <ul class="list-disc ml-4 mt-1">
+            <li>Compare com a distribuição de gênero na força de trabalho total</li>
+            <li>Analise junto ao gráfico de dias para entender duração média</li>
+            <li>Considere fatores biológicos e ocupacionais específicos para cada gênero</li>
+            <li>Identifique necessidades de programas de saúde direcionados</li>
+          </ul>
+        </div>
+      </div>`;
     }
   },
   responsive: [{
@@ -472,14 +636,40 @@ const genderCountOptions = {
     options: { legend: { position: 'bottom' } }
   }]
 };
-new ApexCharts(document.querySelector("#genderCountChart"), genderCountOptions).render();
+new ApexCharts(document.querySelector("#genderCountChart"), genderCountChart).render();
 
-const genderDaysOptions = {
+const genderDaysChart = {
   chart: { 
+    id: 'gender-days-chart',
     type: 'pie', 
     height: 200,
     background: 'transparent',
-    toolbar: { show: false },
+    toolbar: {
+      show: true,
+      tools: {
+        download: true,
+        selection: false,
+        zoom: false,
+        zoomin: false,
+        zoomout: false,
+        pan: false,
+        reset: false
+      },
+      export: {
+        csv: {
+          filename: 'dias-afastados-por-genero',
+          columnDelimiter: ',',
+          headerCategory: 'Gênero',
+          headerValue: 'Dias'
+        },
+        svg: {
+          filename: 'dias-afastados-por-genero'
+        },
+        png: {
+          filename: 'dias-afastados-por-genero'
+        }
+      }
+    },
     animations: { enabled: true, easing: 'easeinout', speed: 800 }
   },
   colors: ['#3498db', '#9b59b6', 'rgba(149, 165, 166, 0.8)'],
@@ -494,11 +684,32 @@ const genderDaysOptions = {
     markers: { width: 10, height: 10, radius: 2 }
   },
   tooltip: {
+    enabled: true,
     theme: 'dark',
-    y: {
-      formatter: function(value) {
-        return Math.round(value);
-      }
+    custom: function({series, seriesIndex, dataPointIndex, w}) {
+      const label = w.globals.labels[dataPointIndex];
+      const value = w.globals.seriesTotals[dataPointIndex];
+      const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+      const percentage = ((value / total) * 100).toFixed(1);
+      
+      const atestadosGenero = chartData.genero.count[dataPointIndex];
+      const diasGenero = chartData.genero.dias[dataPointIndex];
+      const mediaDiasGenero = diasGenero / atestadosGenero;
+      
+      return `<div class="p-3 bg-[#002844] rounded border border-white/10 shadow-lg">
+        <div class="text-white font-medium mb-2">Gênero: ${label}</div>
+        <div class="text-white/80 mb-1">Dias Afastados: <span class="font-bold">${Math.round(value)}</span> (${percentage}% do total)</div>
+        <div class="text-white/80 mb-1">Média Dias/Atestado: <span class="font-bold">${mediaDiasGenero.toFixed(1)}</span></div>
+        <div class="text-white/70 text-xs mt-2">
+          <p>Insights importantes:</p>
+          <ul class="list-disc ml-4 mt-1">
+            <li>Compare com o gráfico de atestados para avaliar duração média por gênero</li>
+            <li>Diferenças significativas podem indicar tipos distintos de condições de saúde</li>
+            <li>Alta média de dias pode sugerir condições mais graves ou crônicas</li>
+            <li>Analise também faixa etária e funções predominantes de cada gênero</li>
+          </ul>
+        </div>
+      </div>`;
     }
   },
   responsive: [{
@@ -506,33 +717,28 @@ const genderDaysOptions = {
     options: { legend: { position: 'bottom' } }
   }]
 };
-new ApexCharts(document.querySelector("#genderDaysChart"), genderDaysOptions).render();
+new ApexCharts(document.querySelector("#genderDaysChart"), genderDaysChart).render();
 
 let radarSeries = [];
 let patologias = [];
 
-// Primeiro identificar todos os grupos patológicos únicos para formar as dimensões do radar
 chartData.age_cid_correlation.data.forEach(item => {
   if (!patologias.includes(item.cid)) {
     patologias.push(item.cid);
   }
 });
 
-// Criar as séries para cada faixa etária
 let faixasEtarias = {};
 chartData.age_cid_correlation.data.forEach(item => {
   if (!faixasEtarias[item.age_range]) {
     faixasEtarias[item.age_range] = {};
-    // Inicializar todos os valores com zero
     patologias.forEach(patologia => {
       faixasEtarias[item.age_range][patologia] = 0;
     });
   }
-  // Atribuir os valores reais
   faixasEtarias[item.age_range][item.cid] = item.count;
 });
 
-// Converter para o formato de séries do ApexCharts
 for (let faixaEtaria in faixasEtarias) {
   let serieData = [];
   patologias.forEach(patologia => {
@@ -629,11 +835,56 @@ const radarOptions = {
     }
   },
   tooltip: {
+    enabled: true,
     theme: 'dark',
-    y: {
-      formatter: function(value) {
-        return Math.round(value) + ' ocorrência' + (value === 1 ? '' : 's');
+    custom: function({series, seriesIndex, dataPointIndex, w}) {
+      const faixaEtaria = w.globals.seriesNames[seriesIndex];
+      const patologia = w.globals.labels[dataPointIndex];
+      const ocorrencias = series[seriesIndex][dataPointIndex];
+      
+      const totalFaixaEtaria = series[seriesIndex].reduce((a, b) => a + b, 0);
+      const percentualPatologia = ((ocorrencias / totalFaixaEtaria) * 100).toFixed(1);
+      
+      const valoresOutrasFaixas = [];
+      for (let i = 0; i < series.length; i++) {
+        if (i !== seriesIndex) {
+          valoresOutrasFaixas.push({
+            faixa: w.globals.seriesNames[i],
+            valor: series[i][dataPointIndex]
+          });
+        }
       }
+      
+      valoresOutrasFaixas.sort((a, b) => b.valor - a.valor);
+      
+      let comparativoHTML = '';
+      if (valoresOutrasFaixas.length > 0) {
+        comparativoHTML = `<div class="text-white/80 mt-2 text-xs">Comparativo com outras faixas etárias:</div>
+          <ul class="list-disc ml-4 mt-1 text-xs">`;
+        
+        valoresOutrasFaixas.forEach(item => {
+          comparativoHTML += `<li>${item.faixa}: ${Math.round(item.valor)} ocorrências</li>`;
+        });
+        
+        comparativoHTML += `</ul>`;
+      }
+      
+      return `<div class="p-3 bg-[#002844] rounded border border-white/10 shadow-lg" style="min-width: 220px;">
+        <div class="text-white font-medium mb-2">Faixa Etária: ${faixaEtaria}</div>
+        <div class="text-white/80 mb-1">Patologia: <span class="font-bold">${patologia}</span></div>
+        <div class="text-white/80 mb-1">Ocorrências: <span class="font-bold">${Math.round(ocorrencias)}</span> (${percentualPatologia}% da faixa)</div>
+        
+        ${comparativoHTML}
+        
+        <div class="text-white/70 text-xs mt-2">
+          <p>Como interpretar:</p>
+          <ul class="list-disc ml-4 mt-1">
+            <li>Picos indicam maior prevalência da patologia na faixa etária</li>
+            <li>Compare padrões entre faixas para identificar tendências</li>
+            <li>Use para direcionar programas preventivos específicos</li>
+          </ul>
+        </div>
+      </div>`;
     }
   },
   legend: {
@@ -660,8 +911,6 @@ const radarOptions = {
   ]
 };
 new ApexCharts(document.querySelector("#heatmapChart"), radarOptions).render();
-new ApexCharts(document.querySelector("#heatmapChart"), heatmapOptions).render();
-new ApexCharts(document.querySelector("#heatmapChart"), heatmapOptions).render();
 
 function setupTooltips() {
   const tooltip = document.getElementById('tooltip');
