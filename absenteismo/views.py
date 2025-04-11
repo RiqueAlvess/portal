@@ -115,6 +115,64 @@ def absenteismo(request):
         count=Count('id')
     ).order_by('dia_semana')
 
+    cids_por_dia_semana = []
+    duracao_por_dia_semana = []
+    
+    dias_semana = list(range(1, 8))
+    
+    nome_duracao = {
+        'horas': 'Horas',
+        'dias_1_3': '1-3 dias',
+        'dias_4_7': '4-7 dias',
+        'dias_8_14': '8-14 dias',
+        'dias_15_mais': '15+ dias'
+    }
+    
+    for dia in dias_semana:
+        atestados_dia = atestados.filter(DT_INICIO_ATESTADO__week_day=dia)
+        total_dia = atestados_dia.count()
+        
+        top_cid = atestados_dia.exclude(
+            GRUPO_PATOLOGICO__isnull=True
+        ).exclude(
+            GRUPO_PATOLOGICO=''
+        ).values('GRUPO_PATOLOGICO').annotate(
+            count=Count('id')
+        ).order_by('-count').first()
+        
+        if top_cid and total_dia > 0:
+            top_cid['percentage'] = round((top_cid['count'] / total_dia) * 100, 1)
+            cids_por_dia_semana.append(top_cid)
+        else:
+            cids_por_dia_semana.append({
+                'GRUPO_PATOLOGICO': 'Não disponível',
+                'count': 0,
+                'percentage': 0
+            })
+        
+        duracao_dia = {
+            'horas': atestados_dia.filter(TIPO_ATESTADO=1).count(),
+            'dias_1_3': atestados_dia.filter(DIAS_AFASTADOS__gte=1, DIAS_AFASTADOS__lte=3, TIPO_ATESTADO=0).count(),
+            'dias_4_7': atestados_dia.filter(DIAS_AFASTADOS__gte=4, DIAS_AFASTADOS__lte=7, TIPO_ATESTADO=0).count(),
+            'dias_8_14': atestados_dia.filter(DIAS_AFASTADOS__gte=8, DIAS_AFASTADOS__lte=14, TIPO_ATESTADO=0).count(),
+            'dias_15_mais': atestados_dia.filter(DIAS_AFASTADOS__gte=15, TIPO_ATESTADO=0).count()
+        }
+        
+        if total_dia > 0:
+
+            max_duracao = max(duracao_dia.items(), key=lambda x: x[1])
+            duracao_por_dia_semana.append({
+                'tipo': nome_duracao[max_duracao[0]],
+                'count': max_duracao[1],
+                'percentage': round((max_duracao[1] / total_dia) * 100, 1) if total_dia > 0 else 0
+            })
+        else:
+            duracao_por_dia_semana.append({
+                'tipo': 'Não disponível',
+                'count': 0,
+                'percentage': 0
+            })
+
     absenteismo_por_setor = atestados.values('SETOR').annotate(
         count=Count('id'),
         dias=Coalesce(Sum('DIAS_AFASTADOS'), 0)
@@ -236,7 +294,9 @@ def absenteismo(request):
         },
         'age_cid_correlation': {
             'data': age_cid_correlation
-        }
+        },
+        'cids_por_dia_semana': cids_por_dia_semana,
+        'duracao_por_dia_semana': duracao_por_dia_semana
     }
 
     for item in dia_semana:

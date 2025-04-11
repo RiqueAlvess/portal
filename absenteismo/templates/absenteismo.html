@@ -381,6 +381,30 @@ const durationOptions = {
 };
 new ApexCharts(document.querySelector("#durationChart"), durationOptions).render();
 
+function getMostCommonCID(dayIndex) {
+  if (chartData.cids_por_dia_semana && chartData.cids_por_dia_semana[dayIndex]) {
+    const cid = chartData.cids_por_dia_semana[dayIndex];
+    return {
+      name: cid.GRUPO_PATOLOGICO || "Não disponível",
+      count: cid.count || 0,
+      percentage: cid.percentage || 0
+    };
+  }
+  return { name: "Não disponível", count: 0, percentage: 0 };
+}
+
+function getMostCommonDuration(dayIndex) {
+  if (chartData.duracao_por_dia_semana && chartData.duracao_por_dia_semana[dayIndex]) {
+    const duracao = chartData.duracao_por_dia_semana[dayIndex];
+    return {
+      name: duracao.tipo || "Não disponível",
+      count: duracao.count || 0,
+      percentage: duracao.percentage || 0
+    };
+  }
+  return { name: "Não disponível", count: 0, percentage: 0 };
+}
+
 const weekdayOptions = {
   ...commonOptions,
   chart: { ...commonOptions.chart, type: 'bar', height: 250 },
@@ -401,9 +425,21 @@ const weekdayOptions = {
       const total = chartData.dia_semana.data.reduce((a, b) => a + b, 0);
       const percentage = ((value / total) * 100).toFixed(1);
       
+      const mainCID = getMostCommonCID(dataPointIndex);
+      const mainDuration = getMostCommonDuration(dataPointIndex);
+      
       return `<div class="p-3 bg-[#002844] rounded border border-white/10 shadow-lg">
         <div class="text-white font-medium mb-1">${day}</div>
         <div class="text-white/80 mb-1">Quantidade: <span class="font-bold">${value}</span> (${percentage}% do total)</div>
+        
+        <div class="border-t border-white/10 my-2 pt-2">
+          <div class="text-white/90 text-xs font-semibold mb-1">Principal Grupo Patológico:</div>
+          <div class="text-white/80 mb-2 text-xs">${mainCID.name} <span class="font-bold">(${mainCID.count})</span> <span class="text-white/60">${mainCID.percentage}% das ocorrências deste dia</span></div>
+          
+          <div class="text-white/90 text-xs font-semibold mb-1">Principal Tipo de Atestado:</div>
+          <div class="text-white/80 mb-1 text-xs">${mainDuration.name} <span class="font-bold">(${mainDuration.count})</span> <span class="text-white/60">${mainDuration.percentage}% das ocorrências deste dia</span></div>
+        </div>
+        
         <div class="text-white/70 text-xs mt-2">
           <p>Padrões a observar:</p>
           <ul class="list-disc ml-4 mt-1">
