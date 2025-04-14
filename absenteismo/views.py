@@ -387,7 +387,6 @@ def absenteismo(request):
     cache.set(cache_key, context, 300)
     return render(request, "absenteismo.html", context)
 
-@cache_page(300)
 @login_required
 def ntep(request):
     try:
@@ -406,11 +405,6 @@ def ntep(request):
         data_inicio = hoje - timedelta(days=30)
     else:
         data_inicio = hoje - timedelta(days=180)
-
-    cache_key = f"ntep_{request.user.id}_{periodo}_{setor}_{busca}"
-    dados_cache = cache.get(cache_key)
-    if dados_cache:
-        return render(request, "ntep.html", dados_cache)
 
     cnaes_empresa = empresa_ativa.cnaes.all()
     
@@ -497,13 +491,8 @@ def ntep(request):
     setores = sorted(set(base_query.filter(SETOR__isnull=False).exclude(SETOR='').values_list('SETOR', flat=True).distinct()))
     
     paginator = Paginator(registros_ntep, 10)
-    page = request.GET.get('page')
-    try:
-        registros_paginados = paginator.page(page)
-    except PageNotAnInteger:
-        registros_paginados = paginator.page(1)
-    except EmptyPage:
-        registros_paginados = paginator.page(paginator.num_pages)
+    page_number = request.GET.get('page')
+    registros_paginados = paginator.get_page(page_number)
     
     context = {
         "empresa_ativa": empresa_ativa,
@@ -519,8 +508,8 @@ def ntep(request):
         "setor_mais_afetado": setor_mais_afetado,
     }
     
-    cache.set(cache_key, context, 300)
     return render(request, "ntep.html", context)
+
 
 @login_required
 def ntep_detalhes(request, id):
