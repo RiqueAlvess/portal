@@ -520,6 +520,12 @@ def ntep_detalhes(request, id):
     
     registro = get_object_or_404(Absenteismo, id=id, empresa=empresa_ativa)
     
+    if registro.funcionario and registro.funcionario.DATA_NASCIMENTO:
+        hoje = date.today()
+        nascimento = registro.funcionario.DATA_NASCIMENTO
+        idade = hoje.year - nascimento.year - ((hoje.month, hoje.day) < (nascimento.month, nascimento.day))
+        registro.funcionario_idade = idade
+    
     tem_ntep = False
     cnae = None
     
@@ -568,16 +574,21 @@ def ntep_detalhes(request, id):
                 id__in=ntep_ids
             ).order_by('-DT_INICIO_ATESTADO')
         
-        taxa_reincidencia = (total_atestados_cid / total_atestados_func * 100) if total_atestados_func > 0 else 0
+        if total_atestados_cid <= 1:
+            taxa_reincidencia = 0
+        else:
+            taxa_reincidencia = ((total_atestados_cid - 1) / total_atestados_func * 100) if total_atestados_func > 0 else 0
         
         ntep_percentual = (total_ntep_positivo / total_atestados_func * 100) if total_atestados_func > 0 else 0
+        cid_percentual = (total_atestados_cid / total_atestados_func * 100) if total_atestados_func > 0 else 0
         
         funcionario_stats = {
             "total_atestados": total_atestados_func,
             "total_atestados_cid": total_atestados_cid,
             "total_ntep_positivo": total_ntep_positivo,
             "taxa_reincidencia": taxa_reincidencia,
-            "ntep_percentual": ntep_percentual
+            "ntep_percentual": ntep_percentual,
+            "cid_percentual": cid_percentual
         }
     
     context = {

@@ -69,14 +69,14 @@
           <p class="text-white/80 mb-4">
             <span class="block text-xs text-white/60 mb-1">Idade</span>
             {% if registro.funcionario.DATA_NASCIMENTO %}
-            {% now "Y" as current_year %}
-            {% with birth_year=registro.funcionario.DATA_NASCIMENTO|date:"Y" %}
-            {{ current_year|add:"-"|add:birth_year }} anos
-            {% endwith %}
+              {% with idade=registro.funcionario_idade %}
+                {{ idade }} anos
+              {% endwith %}
             {% else %}
-            Não informada
+              Não informada
             {% endif %}
           </p>
+          
           {% endif %}
           
           <p class="text-white/80 mb-4">
@@ -123,11 +123,13 @@
         <div class="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition-all duration-300">
           <h3 class="text-xs text-white/70 mb-1">Atestados com este CID</h3>
           <p class="text-2xl font-bold text-white">{{ funcionario_stats.total_atestados_cid }}</p>
+          <p class="text-white/60 text-xs mt-1">{{ funcionario_stats.cid_percentual|floatformat:1 }}% do total de atestados</p>
         </div>
         
         <div class="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition-all duration-300">
           <h3 class="text-xs text-white/70 mb-1">Total NTEP Positivo</h3>
           <p class="text-2xl font-bold text-white">{{ funcionario_stats.total_ntep_positivo }}</p>
+          <p class="text-white/60 text-xs mt-1">{{ funcionario_stats.ntep_percentual|floatformat:1 }}% do total de atestados</p>
         </div>
         
         <div class="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition-all duration-300">
@@ -162,7 +164,7 @@
             
             {% if funcionario_stats.total_atestados_cid > 1 %}
             <br><br>O funcionário já apresentou este mesmo CID {{ funcionario_stats.total_atestados_cid }} vezes, 
-            o que representa {{ funcionario_stats.taxa_reincidencia|floatformat:1 }}% do total de seus atestados.
+            o que representa {{ funcionario_stats.cid_percentual|floatformat:1 }}% do total de seus atestados.
             {% endif %}
           </p>
         </div>
