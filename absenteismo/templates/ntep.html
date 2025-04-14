@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body %}
+<div class="px-10 py-12 bg-[#00325A] min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-8 backdrop-blur-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 class="text-2xl sm:text-3xl font-bold text-white">Análise de NTEP - {{ empresa_ativa.RAZAOSOCIAL }}</h1>
+        <div class="text-white/60 text-sm bg-white/5 px-4 py-2 rounded-lg border border-white/10">
+          <span class="inline-block mr-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </span>
+          Data atual: {% now "d/m/Y" %}
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-10 backdrop-blur-sm">
+      <form method="get" class="flex flex-wrap gap-4 items-end">
+        <div class="flex-1">
+          <label class="text-white/70 text-sm">Buscar</label>
+          <input type="text" name="q" value="{{ busca }}" placeholder="Funcionário, CID ou setor..." 
+                 class="w-full bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10 placeholder:text-white/40">
+        </div>
+        <div>
+          <label class="text-white/70 text-sm">Período</label>
+          <select name="periodo" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
+            <option value="semestre" {% if periodo == 'semestre' %}selected{% endif %}>Últimos 6 meses</option>
+            <option value="trimestre" {% if periodo == 'trimestre' %}selected{% endif %}>Últimos 3 meses</option>
+            <option value="mes" {% if periodo == 'mes' %}selected{% endif %}>Últimos 30 dias</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-white/70 text-sm">Setor</label>
+          <select name="setor" class="bg-[#002844] text-white text-sm rounded px-3 py-1 border border-white/10">
+            <option value="">Todos</option>
+            {% for s in setores %}
+            <option value="{{ s }}" {% if setor == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <button type="submit" class="bg-[#0072BC] hover:bg-[#005c9d] text-white text-sm font-semibold px-4 py-1 rounded border border-[#0072BC] transition-colors">
+            Filtrar
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
+        <h3 class="text-sm text-white/70 mb-1">NTEP Positivo <span class="info-icon" data-tooltip="Registros de afastamento com relação direta entre a CID e a atividade econômica da empresa (CNAE)">i</span></h3>
+        <p class="text-3xl font-bold text-white">{{ total_ntep_positivo }}</p>
+        <p class="text-white/60 text-sm">{{ porcentagem_ntep|floatformat:1 }}% do total de atestados</p>
+      </div>
+      
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
+        <h3 class="text-sm text-white/70 mb-1">CID com Maior Recorrência <span class="info-icon" data-tooltip="CID que mais aparece entre os casos de NTEP positivo, indicando relação mais frequente com a atividade econômica">i</span></h3>
+        <p class="text-2xl font-bold text-white">{{ cid_maior_recorrencia.CID_PRINCIPAL }}</p>
+        <p class="text-white/90 text-sm truncate">{{ cid_maior_recorrencia.DESCRICAO_CID|default:"" }}</p>
+        <p class="text-white/60 text-sm">{{ cid_maior_recorrencia.total }} casos ({{ cid_maior_recorrencia.percentual|floatformat:1 }}%)</p>
+      </div>
+      
+      <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
+        <h3 class="text-sm text-white/70 mb-1">Setor Mais Afetado <span class="info-icon" data-tooltip="Setor da empresa com maior número de casos de NTEP positivo, podendo indicar fatores de risco específicos do ambiente">i</span></h3>
+        <p class="text-2xl font-bold text-white">{{ setor_mais_afetado.SETOR }}</p>
+        <p class="text-white/60 text-sm">{{ setor_mais_afetado.total }} casos ({{ setor_mais_afetado.percentual|floatformat:1 }}%)</p>
+      </div>
+    </div>
+
+    <div class="bg-white/5 border border-white/10 rounded-2xl shadow-xl overflow-hidden mb-10">
+      <div class="p-6 bg-[#002844]">
+        <h2 class="text-xl font-bold text-white mb-1">Registros de NTEP Positivo</h2>
+        <p class="text-white/60 text-sm">Atestados com relação direta entre a doença (CID) e a atividade econômica (CNAE)</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead class="bg-[#002844]">
+            <tr>
+              <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Funcionário</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Setor</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">CID</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Período</th>
+              <th class="text-left px-6 py-4 text-white/60 text-sm tracking-wider">Dias</th>
+              <th class="text-center px-6 py-4 text-white/60 text-sm tracking-wider"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/10">
+            {% for registro in registros_ntep %}
+            <tr class="hover:bg-white/5 transition-colors">
+              <td class="px-6 py-4 text-white/90">{{ registro.NOME_FUNCIONARIO }}</td>
+              <td class="px-6 py-4 text-white/90">{{ registro.SETOR }}</td>
+              <td class="px-6 py-4">
+                <span class="font-medium text-white">{{ registro.CID_PRINCIPAL }}</span>
+                {% if registro.DESCRICAO_CID %}
+                <br><span class="text-white/60 text-xs">{{ registro.DESCRICAO_CID|truncatechars:30 }}</span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-4 text-white/90">{{ registro.DT_INICIO_ATESTADO|date:"d/m/Y" }} a {{ registro.DT_FIM_ATESTADO|date:"d/m/Y" }}</td>
+              <td class="px-6 py-4 text-white/90">{{ registro.DIAS_AFASTADOS }}</td>
+              <td class="px-6 py-4 text-center">
+                <a href="{% url 'ntep_detalhes' registro.id %}" class="inline-block bg-[#0072BC]/20 hover:bg-[#0072BC]/30 text-[#0072BC] text-xs font-semibold px-3 py-1 rounded transition">
+                  Detalhes
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-8 text-white/70">Nenhum registro com NTEP positivo encontrado no período.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      {% if registros_ntep.paginator.num_pages > 1 %}
+      <div class="px-6 py-4 flex flex-col sm:flex-row justify-between items-center border-t border-white/10">
+        <div class="text-sm text-white/70 mb-4 sm:mb-0">
+          Mostrando {{ registros_ntep.start_index }} a {{ registros_ntep.end_index }} de {{ registros_ntep.paginator.count }} registros
+        </div>
+        <div class="flex space-x-2">
+          {% if registros_ntep.has_previous %}
+            <a href="?page=1{% if periodo %}&periodo={{ periodo }}{% endif %}{% if setor %}&setor={{ setor }}{% endif %}{% if busca %}&q={{ busca }}{% endif %}" 
+              class="px-3 py-1 bg-white/10 rounded-md hover:bg-white/20 text-white/80 text-sm">Primeira</a>
+            <a href="?page={{ registros_ntep.previous_page_number }}{% if periodo %}&periodo={{ periodo }}{% endif %}{% if setor %}&setor={{ setor }}{% endif %}{% if busca %}&q={{ busca }}{% endif %}" 
+              class="px-3 py-1 bg-white/10 rounded-md hover:bg-white/20 text-white/80 text-sm">Anterior</a>
+          {% endif %}
+          
+          <span class="px-3 py-1 bg-[#0072BC] rounded-md text-white text-sm">
+            {{ registros_ntep.number }} de {{ registros_ntep.paginator.num_pages }}
+          </span>
+          
+          {% if registros_ntep.has_next %}
+            <a href="?page={{ registros_ntep.next_page_number }}{% if periodo %}&periodo={{ periodo }}{% endif %}{% if setor %}&setor={{ setor }}{% endif %}{% if busca %}&q={{ busca }}{% endif %}" 
+              class="px-3 py-1 bg-white/10 rounded-md hover:bg-white/20 text-white/80 text-sm">Próxima</a>
+            <a href="?page={{ registros_ntep.paginator.num_pages }}{% if periodo %}&periodo={{ periodo }}{% endif %}{% if setor %}&setor={{ setor }}{% endif %}{% if busca %}&q={{ busca }}{% endif %}" 
+              class="px-3 py-1 bg-white/10 rounded-md hover:bg-white/20 text-white/80 text-sm">Última</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    
+    <div class="bg-white/5 border border-white/10 rounded-xl p-5 shadow mb-6 backdrop-blur-sm">
+      <div class="flex items-center gap-2 mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#0072BC]">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <h3 class="text-lg font-semibold text-white">Sobre NTEP</h3>
+      </div>
+      <p class="text-white/80 text-sm mb-3">
+        O <strong>Nexo Técnico Epidemiológico Previdenciário (NTEP)</strong> é uma metodologia que estabelece 
+        automaticamente o nexo causal entre a doença/lesão e o trabalho, com base na relação estatística 
+        entre o código da Classificação Internacional de Doenças (CID) e o código da atividade econômica da empresa (CNAE).
+      </p>
+      <p class="text-white/80 text-sm">
+        Quando um registro apresenta NTEP positivo, significa que há uma relação estatisticamente significativa 
+        entre a doença diagnosticada e a atividade econômica da empresa, podendo indicar uma doença ocupacional.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div id="tooltip" class="tooltip"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const tooltip = document.getElementById('tooltip');
+    const infoIcons = document.querySelectorAll('.info-icon');
+    
+    infoIcons.forEach(icon => {
+      icon.addEventListener('mouseenter', (e) => {
+        const tooltipText = e.target.getAttribute('data-tooltip');
+        tooltip.textContent = tooltipText;
+        const iconRect = e.target.getBoundingClientRect();
+        const tooltipWidth = 250;
+        let left = iconRect.left + (iconRect.width / 2) - (tooltipWidth / 2);
+        const top = iconRect.bottom + 8 + window.scrollY;
+        if (left + tooltipWidth > window.innerWidth - 10) { left = window.innerWidth - tooltipWidth - 10; }
+        if (left < 10) { left = 10; }
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+        tooltip.style.maxWidth = `${tooltipWidth}px`;
+        tooltip.classList.add('visible');
+      });
+      
+      icon.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('visible');
+      });
+    });
+  });
+</script>
+
+<style>
+  .info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-weight: bold;
+    cursor: help;
+    margin-left: 6px;
+    transition: all 0.2s ease;
+  }
+  
+  .info-icon:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .tooltip {
+    position: absolute;
+    visibility: hidden;
+    max-width: 250px;
+    background-color: rgba(0, 25, 50, 0.95);
+    color: white;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: opacity 0.2s;
+    opacity: 0;
+  }
+  
+  .tooltip.visible {
+    visibility: visible;
+    opacity: 1;
+  }
+</style>
+{% endblock %}

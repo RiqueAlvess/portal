@@ -1,14 +1,16 @@
 from datetime import date, timedelta
 from django.core.cache import cache
-from django.db.models import F
-from django.shortcuts import render
+from django.db.models import Count, Sum, F, Q, Case, When, Value, IntegerField
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
 from dashboard.models import EmpresaAtivaUsuario
-from absenteismo.models import Absenteismo
+from absenteismo.models import Absenteismo, CNAE, NTEP
 from funcionarios.models import Funcionario
 import json
 from decimal import Decimal
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -384,3 +386,218 @@ def absenteismo(request):
 
     cache.set(cache_key, context, 300)
     return render(request, "absenteismo.html", context)
+
+@cache_page(300)
+@login_required
+def ntep(request):
+    try:
+        empresa_ativa = EmpresaAtivaUsuario.objects.get(usuario=request.user).empresa
+    except EmpresaAtivaUsuario.DoesNotExist:
+        return render(request, "erro.html", {"mensagem": "Empresa ativa não encontrada."})
+
+    periodo = request.GET.get("periodo", "semestre")
+    setor = request.GET.get("setor", "")
+    busca = request.GET.get("q", "")
+    hoje = date.today()
+    
+    if periodo == "trimestre":
+        data_inicio = hoje - timedelta(days=90)
+    elif periodo == "mes":
+        data_inicio = hoje - timedelta(days=30)
+    else:
+        data_inicio = hoje - timedelta(days=180)
+
+    cache_key = f"ntep_{request.user.id}_{periodo}_{setor}_{busca}"
+    dados_cache = cache.get(cache_key)
+    if dados_cache:
+        return render(request, "ntep.html", dados_cache)
+
+    cnaes_empresa = empresa_ativa.cnaes.all()
+    
+    if not cnaes_empresa.exists():
+        return render(request, "ntep.html", {
+            "empresa_ativa": empresa_ativa,
+            "periodo": periodo,
+            "setor": setor,
+            "busca": busca,
+            "registros_ntep": [],
+            "setores": [],
+            "total_ntep_positivo": 0,
+            "porcentagem_ntep": 0,
+            "total_atestados": 0,
+            "mensagem_erro": "Empresa sem CNAE associado. É necessário vincular um CNAE à empresa para análise de NTEP."
+        })
+    
+    todos_cids = []
+    for cnae in cnaes_empresa:
+        try:
+            ntep = NTEP.objects.get(cnae=cnae)
+            if ntep.cids:
+                todos_cids.extend(ntep.cids)
+        except NTEP.DoesNotExist:
+            continue
+    
+    if not todos_cids:
+        return render(request, "ntep.html", {
+            "empresa_ativa": empresa_ativa,
+            "periodo": periodo,
+            "setor": setor,
+            "busca": busca,
+            "registros_ntep": [],
+            "setores": [],
+            "total_ntep_positivo": 0,
+            "porcentagem_ntep": 0,
+            "total_atestados": 0,
+            "mensagem_erro": "Não foram encontrados CIDs associados aos CNAEs da empresa para análise de NTEP."
+        })
+    
+    base_query = Absenteismo.objects.filter(
+        empresa=empresa_ativa,
+        DT_INICIO_ATESTADO__gte=data_inicio
+    ).exclude(NOME_FUNCIONARIO__icontains="nomegenerico")
+    
+    total_atestados = base_query.count()
+    ntep_query = base_query.filter(CID_PRINCIPAL__in=todos_cids)
+    
+    if setor:
+        ntep_query = ntep_query.filter(SETOR=setor)
+    
+    if busca:
+        ntep_query = ntep_query.filter(
+            Q(NOME_FUNCIONARIO__icontains=busca) |
+            Q(CID_PRINCIPAL__icontains=busca) |
+            Q(DESCRICAO_CID__icontains=busca) |
+            Q(SETOR__icontains=busca) |
+            Q(GRUPO_PATOLOGICO__icontains=busca)
+        )
+    
+    registros_ntep = ntep_query.select_related('funcionario')
+    
+    total_ntep_positivo = registros_ntep.count()
+    porcentagem_ntep = (total_ntep_positivo / total_atestados * 100) if total_atestados > 0 else 0
+    
+    cid_stats = registros_ntep.values('CID_PRINCIPAL', 'DESCRICAO_CID').annotate(
+        total=Count('id')
+    ).order_by('-total')
+    
+    cid_maior_recorrencia = None
+    if cid_stats:
+        cid_maior_recorrencia = cid_stats[0]
+        cid_maior_recorrencia['percentual'] = (cid_maior_recorrencia['total'] / total_ntep_positivo * 100) if total_ntep_positivo > 0 else 0
+    
+    setor_stats = registros_ntep.values('SETOR').annotate(
+        total=Count('id')
+    ).order_by('-total')
+    
+    setor_mais_afetado = None
+    if setor_stats:
+        setor_mais_afetado = setor_stats[0]
+        setor_mais_afetado['percentual'] = (setor_mais_afetado['total'] / total_ntep_positivo * 100) if total_ntep_positivo > 0 else 0
+    
+    setores = sorted(set(base_query.filter(SETOR__isnull=False).exclude(SETOR='').values_list('SETOR', flat=True).distinct()))
+    
+    paginator = Paginator(registros_ntep, 10)
+    page = request.GET.get('page')
+    try:
+        registros_paginados = paginator.page(page)
+    except PageNotAnInteger:
+        registros_paginados = paginator.page(1)
+    except EmptyPage:
+        registros_paginados = paginator.page(paginator.num_pages)
+    
+    context = {
+        "empresa_ativa": empresa_ativa,
+        "periodo": periodo,
+        "setor": setor,
+        "busca": busca,
+        "setores": setores,
+        "registros_ntep": registros_paginados,
+        "total_ntep_positivo": total_ntep_positivo,
+        "porcentagem_ntep": porcentagem_ntep,
+        "total_atestados": total_atestados,
+        "cid_maior_recorrencia": cid_maior_recorrencia,
+        "setor_mais_afetado": setor_mais_afetado,
+    }
+    
+    cache.set(cache_key, context, 300)
+    return render(request, "ntep.html", context)
+
+@login_required
+def ntep_detalhes(request, id):
+    try:
+        empresa_ativa = EmpresaAtivaUsuario.objects.get(usuario=request.user).empresa
+    except EmpresaAtivaUsuario.DoesNotExist:
+        return render(request, "erro.html", {"mensagem": "Empresa ativa não encontrada."})
+    
+    registro = get_object_or_404(Absenteismo, id=id, empresa=empresa_ativa)
+    
+    tem_ntep = False
+    cnae = None
+    
+    todos_cids = []
+    for cnae_obj in empresa_ativa.cnaes.all():
+        try:
+            ntep = NTEP.objects.get(cnae=cnae_obj)
+            if registro.CID_PRINCIPAL in ntep.cids:
+                tem_ntep = True
+                cnae = cnae_obj
+            if ntep.cids:
+                todos_cids.extend(ntep.cids)
+        except NTEP.DoesNotExist:
+            continue
+    
+    if not tem_ntep:
+        return redirect('ntep')
+    
+    funcionario_stats = {}
+    outros_ntep_registros = []
+    
+    if registro.funcionario:
+        total_atestados_func = Absenteismo.objects.filter(
+            funcionario=registro.funcionario
+        ).count()
+        
+        total_atestados_cid = Absenteismo.objects.filter(
+            funcionario=registro.funcionario,
+            CID_PRINCIPAL=registro.CID_PRINCIPAL
+        ).count()
+        
+        atestados_func = Absenteismo.objects.filter(
+            funcionario=registro.funcionario
+        )
+        
+        total_ntep_positivo = 0
+        ntep_ids = []
+        
+        for atestado in atestados_func:
+            if atestado.CID_PRINCIPAL in todos_cids:
+                total_ntep_positivo += 1
+                ntep_ids.append(atestado.id)
+        
+        if ntep_ids:
+            outros_ntep_registros = Absenteismo.objects.filter(
+                id__in=ntep_ids
+            ).order_by('-DT_INICIO_ATESTADO')
+        
+        taxa_reincidencia = (total_atestados_cid / total_atestados_func * 100) if total_atestados_func > 0 else 0
+        
+        ntep_percentual = (total_ntep_positivo / total_atestados_func * 100) if total_atestados_func > 0 else 0
+        
+        funcionario_stats = {
+            "total_atestados": total_atestados_func,
+            "total_atestados_cid": total_atestados_cid,
+            "total_ntep_positivo": total_ntep_positivo,
+            "taxa_reincidencia": taxa_reincidencia,
+            "ntep_percentual": ntep_percentual
+        }
+    
+    context = {
+        "empresa_ativa": empresa_ativa,
+        "registro": registro,
+        "funcionario_stats": funcionario_stats,
+        "tem_ntep": tem_ntep,
+        "cnae": cnae,
+        "outros_ntep_registros": outros_ntep_registros
+    }
+    
+    return render(request, "ntep_detalhes.html", context)

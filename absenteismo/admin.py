@@ -134,10 +134,23 @@ if not admin.site.is_registered(Funcionario):
             'CODIGO'
         ]
 
+class EmpresaInline(admin.TabularInline):
+    model = CNAE.empresas.through
+    extra = 1
+    verbose_name = "Empresa vinculada"
+    verbose_name_plural = "Empresas vinculadas"
+
 @admin.register(CNAE)
 class CNAEAdmin(admin.ModelAdmin):
-    list_display = ('codigo', 'descricao')
-    search_fields = ('codigo', 'descricao')
+    list_display = ('codigo', 'descricao', 'count_empresas')
+    search_fields = ('codigo', 'descricao', 'empresas__RAZAOSOCIAL')
+    filter_horizontal = ('empresas',)
+    inlines = [EmpresaInline]
+    exclude = ('empresas',)  # Excluímos porque já temos o inline
+
+    def count_empresas(self, obj):
+        return obj.empresas.count()
+    count_empresas.short_description = 'Número de Empresas'
 
 @admin.register(NTEP)
 class NTEPAdmin(admin.ModelAdmin):

@@ -115,6 +115,7 @@ class CNAE(models.Model):
     """
     codigo = models.CharField(max_length=100, unique=True)
     descricao = models.CharField(max_length=10000, blank=True)
+    empresas = models.ManyToManyField(Empresa, related_name='cnaes', blank=True)
 
     def __str__(self):
         return f"{self.codigo} - {self.descricao}"
