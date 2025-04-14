@@ -1,6 +1,8 @@
 from django.db import models
 from dashboard.models import Empresa
 from funcionarios.models import Funcionario
+from django.contrib.postgres.fields import ArrayField
+
 
 class Absenteismo(models.Model):
     TIPO_ATESTADO_CHOICES = (
@@ -103,3 +105,39 @@ class Absenteismo(models.Model):
                 self.MATRICULA_FUNC = self.funcionario.MATRICULAFUNCIONARIO
         
         super().save(*args, **kwargs)
+
+
+class CNAE(models.Model):
+    """
+    Cadastro de CNAEs.
+    Pode ser associado a várias empresas, ou somente guardado
+    para uso genérico na aplicação.
+    """
+    codigo = models.CharField(max_length=100, unique=True)
+    descricao = models.CharField(max_length=10000, blank=True)
+
+    def __str__(self):
+        return f"{self.codigo} - {self.descricao}"
+    
+    class Meta:
+        db_table = 'cnae'
+    
+
+class NTEP(models.Model):
+    """
+    Nexo Técnico Epidemiológico Previdenciário
+    relacionando um CNAE com uma lista de CIDs.
+    """
+    cnae = models.OneToOneField(
+        CNAE, 
+        on_delete=models.CASCADE,
+        related_name='ntep'
+    )
+    descricao = models.CharField(max_length=10000, blank=True)
+    cids = ArrayField(models.CharField(max_length=100), blank=True, default=list)
+
+    def __str__(self):
+        return f"NTEP - {self.cnae.codigo} | {self.descricao}"
+    
+    class Meta:
+        db_table = 'ntep'
