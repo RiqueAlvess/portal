@@ -447,7 +447,8 @@ def ntep(request):
     
     base_query = Absenteismo.objects.filter(
         empresa=empresa_ativa,
-        DT_INICIO_ATESTADO__gte=data_inicio
+        DT_INICIO_ATESTADO__gte=data_inicio,
+        funcionario__isnull=False
     ).exclude(NOME_FUNCIONARIO__icontains="nomegenerico")
     
     total_atestados = base_query.count()
@@ -509,7 +510,6 @@ def ntep(request):
     }
     
     return render(request, "ntep.html", context)
-
 
 @login_required
 def ntep_detalhes(request, id):
