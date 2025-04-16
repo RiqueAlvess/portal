@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body %}
+<div class="px-10 py-12 bg-[#00325A] min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-white">Exames do Funcionário - {{ empresa_ativa.RAZAOSOCIAL }}</h1>
+      <a href="{% url 'convocacao' %}" class="flex items-center gap-2 text-white/80 hover:text-white transition">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Voltar para lista
+      </a>
+    </div>
+
+    <div class="bg-white/5 border border-white/10 rounded-xl p-6 shadow mb-8">
+      <h2 class="text-xl font-bold text-white mb-4">{{ nome_funcionario }}</h2>
+      <p class="text-white/70 mb-4">Total de exames: {{ total_exames }}</p>
+      
+      <div class="flex flex-wrap gap-4">
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-400/10 text-green-400 rounded">
+          <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+          Em dia: {{ exames_em_dia.count }}
+        </span>
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-400/10 text-yellow-400 rounded">
+          <span class="w-2 h-2 bg-yellow-400 rounded-full"></span>
+          A vencer: {{ exames_a_vencer.count }}
+        </span>
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-400/10 text-blue-400 rounded">
+          <span class="w-2 h-2 bg-blue-400 rounded-full"></span>
+          Pendentes: {{ exames_pendentes.count }}
+        </span>
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-red-400/10 text-red-400 rounded">
+          <span class="w-2 h-2 bg-red-400 rounded-full"></span>
+          Vencidos: {{ exames_vencidos.count }}
+        </span>
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-white/10 text-white/70 rounded">
+          <span class="w-2 h-2 bg-white/30 rounded-full"></span>
+          Sem histórico: {{ exames_sem_historico.count }}
+        </span>
+      </div>
+    </div>
+    
+    {% if exames_em_dia.exists %}
+    <div class="bg-white/5 border border-white/10 border-l-green-400 border-l-4 rounded-xl shadow mb-6">
+      <div class="p-4 border-b border-white/10">
+        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+          <span class="w-3 h-3 bg-green-400 rounded-full"></span>
+          Exames em Dia
+        </h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead class="bg-[#002844]">
+            <tr>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Exame</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Último Pedido</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Resultado</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Próximo Exame</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            {% for exame in exames_em_dia %}
+            <tr class="hover:bg-white/5">
+              <td class="px-6 py-3 text-white/90">{{ exame.EXAME }}</td>
+              <td class="px-6 py-3 text-white/90">{% if exame.ULTIMOPEDIDO %}{{ exame.ULTIMOPEDIDO|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+              <td class="px-6 py-3 text-white/90">{% if exame.DATARESULTADO %}{{ exame.DATARESULTADO|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+              <td class="px-6 py-3 text-white/90">{% if exame.REFAZER %}{{ exame.REFAZER|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+    
+    {% if exames_a_vencer.exists %}
+    <div class="bg-white/5 border border-white/10 border-l-yellow-400 border-l-4 rounded-xl shadow mb-6">
+      <div class="p-4 border-b border-white/10">
+        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+          <span class="w-3 h-3 bg-yellow-400 rounded-full"></span>
+          Exames a Vencer
+        </h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead class="bg-[#002844]">
+            <tr>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Exame</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Último Pedido</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Resultado</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Próximo Exame</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            {% for exame in exames_a_vencer %}
+            <tr class="hover:bg-white/5">
+              <td class="px-6 py-3 text-white/90">{{ exame.EXAME }}</td>
+              <td class="px-6 py-3 text-white/90">{% if exame.ULTIMOPEDIDO %}{{ exame.ULTIMOPEDIDO|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+              <td class="px-6 py-3 text-white/90">{% if exame.DATARESULTADO %}{{ exame.DATARESULTADO|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+              <td class="px-6 py-3 text-white/90 font-medium text-yellow-400">{% if exame.REFAZER %}{{ exame.REFAZER|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+    
+    {% if exames_pendentes.exists %}
+    <div class="bg-white/5 border border-white/10 border-l-blue-400 border-l-4 rounded-xl shadow mb-6">
+      <div class="p-4 border-b border-white/10">
+        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+          <span class="w-3 h-3 bg-blue-400 rounded-full"></span>
+          Exames Pendentes
+        </h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead class="bg-[#002844]">
+            <tr>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Exame</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Pedido Em</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            {% for exame in exames_pendentes %}
+            <tr class="hover:bg-white/5">
+              <td class="px-6 py-3 text-white/90">{{ exame.EXAME }}</td>
+              <td class="px-6 py-3 text-white/90">{% if exame.ULTIMOPEDIDO %}{{ exame.ULTIMOPEDIDO|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+              <td class="px-6 py-3">
+                <span class="px-2 py-1 bg-blue-400/20 text-blue-400 rounded text-xs font-medium">Aguardando resultado</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+    
+    {% if exames_vencidos.exists %}
+    <div class="bg-white/5 border border-white/10 border-l-red-400 border-l-4 rounded-xl shadow mb-6">
+      <div class="p-4 border-b border-white/10">
+        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+          <span class="w-3 h-3 bg-red-400 rounded-full"></span>
+          Exames Vencidos
+        </h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead class="bg-[#002844]">
+            <tr>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Exame</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Último Pedido</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Resultado</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Vencido em</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            {% for exame in exames_vencidos %}
+            <tr class="hover:bg-white/5">
+              <td class="px-6 py-3 text-white/90">{{ exame.EXAME }}</td>
+              <td class="px-6 py-3 text-white/90">{% if exame.ULTIMOPEDIDO %}{{ exame.ULTIMOPEDIDO|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+              <td class="px-6 py-3 text-white/90">{% if exame.DATARESULTADO %}{{ exame.DATARESULTADO|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+              <td class="px-6 py-3 text-white/90 font-medium text-red-400">{% if exame.REFAZER %}{{ exame.REFAZER|date:"d/m/Y" }}{% else %}-{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+    
+    {% if exames_sem_historico.exists %}
+    <div class="bg-white/5 border border-white/10 rounded-xl shadow mb-6">
+      <div class="p-4 border-b border-white/10">
+        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+          <span class="w-3 h-3 bg-white/30 rounded-full"></span>
+          Exames Sem Histórico
+        </h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead class="bg-[#002844]">
+            <tr>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Exame</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Código</th>
+              <th class="text-left px-6 py-3 text-white/60 text-sm">Periodicidade</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            {% for exame in exames_sem_historico %}
+            <tr class="hover:bg-white/5">
+              <td class="px-6 py-3 text-white/90">{{ exame.EXAME }}</td>
+              <td class="px-6 py-3 text-white/90">{{ exame.CODIGOEXAME }}</td>
+              <td class="px-6 py-3 text-white/90">{% if exame.PERIODICIDADE %}{{ exame.PERIODICIDADE }} meses{% else %}-{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
