@@ -9,4 +9,5 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('funcionarios/', include('funcionarios.urls')),
     path('absenteismo/', include('absenteismo.urls')),
+    path('convocacao/', include('convocacao.urls')),
 ]
